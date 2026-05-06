@@ -15,7 +15,7 @@ from . import agents
 ##
 
 gym.register(
-    id="Isaac-Lift-Cube-Franka-v0",
+    id="Isaac-Lift-Groceries-Franka-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:FrankaCubeLiftEnvCfg",
@@ -28,7 +28,7 @@ gym.register(
 )
 
 gym.register(
-    id="Isaac-Lift-Cube-Franka-Play-v0",
+    id="Isaac-Lift-Groceries-Franka-Play-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:FrankaCubeLiftEnvCfg_PLAY",
@@ -45,7 +45,7 @@ gym.register(
 ##
 
 gym.register(
-    id="Isaac-Lift-Cube-Franka-IK-Abs-v0",
+    id="Isaac-Lift-Groceries-Franka-IK-Abs-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
         "env_cfg_entry_point": f"{__name__}.ik_abs_env_cfg:FrankaCubeLiftEnvCfg",
@@ -54,7 +54,7 @@ gym.register(
 )
 
 gym.register(
-    id="Isaac-Lift-Teddy-Bear-Franka-IK-Abs-v0",
+    id="Isaac-Lift-Groceries-Teddy-Bear-Franka-IK-Abs-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
         "env_cfg_entry_point": f"{__name__}.ik_abs_env_cfg:FrankaTeddyBearLiftEnvCfg",
@@ -67,7 +67,7 @@ gym.register(
 ##
 
 gym.register(
-    id="Isaac-Lift-Cube-Franka-IK-Rel-v0",
+    id="Isaac-Lift-Groceries-Franka-IK-Rel-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
         "env_cfg_entry_point": f"{__name__}.ik_rel_env_cfg:FrankaCubeLiftEnvCfg",
