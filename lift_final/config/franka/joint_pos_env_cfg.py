@@ -10,8 +10,8 @@ from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from isaaclab_tasks.manager_based.manipulation.lift import mdp
-from isaaclab_tasks.manager_based.manipulation.lift.lift_env_cfg import LiftEnvCfg
+from ... import mdp
+from ...lift_env_cfg import LiftEnvCfg
 
 ##
 # Pre-defined configs
@@ -23,22 +23,27 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 GROCERIES = {
     "OBJECT_A": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/002_master_chef_can.usd",
+        scale=(0.732, 0.785, 0.733),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_B": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/004_sugar_box.usd",
+        scale=(0.701, 0.823, 1.108),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_C": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/005_tomato_soup_can.usd",
+        scale=(0.739, 0.687, 0.738),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_D": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/006_mustard_bottle.usd",
+        scale=(0.625, 1.098, 0.858),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_E": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/007_tuna_fish_can.usd",
+        scale=(0.877, 1.193, 0.877),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_F": sim_utils.UsdFileCfg(
@@ -47,6 +52,7 @@ GROCERIES = {
     ),
     "OBJECT_G": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/040_large_marker.usd",
+        scale=(0.796, 1.158, 0.770),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
 }

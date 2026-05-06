@@ -12,9 +12,8 @@ from isaaclab.sim.spawners import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
-import isaaclab_tasks.manager_based.manipulation.lift.mdp as mdp
-
 from . import joint_pos_env_cfg
+from ... import mdp
 
 ##
 # Pre-defined configs
