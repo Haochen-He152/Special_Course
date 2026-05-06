@@ -15,8 +15,6 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 
-from pxr import Usd, UsdGeom
-
 
 @dataclass(frozen=True)
 class UsdAsset:
@@ -54,6 +52,8 @@ def resolve_nucleus_dir(cli_nucleus_dir: str | None) -> str:
 
 def compute_usd_bbox_size(usd_path: str, purposes: list[str]) -> tuple[float, float, float]:
     """Compute world-aligned bounding-box size for a USD file."""
+    from pxr import Usd, UsdGeom
+
     stage = Usd.Stage.Open(usd_path)
     if stage is None:
         raise RuntimeError(f"Could not open USD: {usd_path}")
@@ -71,6 +71,8 @@ def compute_usd_bbox_size(usd_path: str, purposes: list[str]) -> tuple[float, fl
 
 def resolve_purposes(purpose_names: list[str]) -> list[str]:
     """Convert CLI purpose names to USD tokens."""
+    from pxr import UsdGeom
+
     purposes = []
     for purpose in purpose_names:
         if purpose == "default":
@@ -94,7 +96,16 @@ def main() -> None:
         choices=["default", "render", "proxy", "guide"],
         help="USD purposes included in the bounding-box computation.",
     )
-    args = parser.parse_args()
+    simulation_app = None
+    try:
+        from isaaclab.app import AppLauncher
+
+        AppLauncher.add_app_launcher_args(parser)
+        args = parser.parse_args()
+        app_launcher = AppLauncher(args)
+        simulation_app = app_launcher.app
+    except Exception:
+        args = parser.parse_args()
 
     nucleus_dir = resolve_nucleus_dir(args.nucleus_dir)
     purposes = resolve_purposes(args.purposes)
@@ -109,6 +120,9 @@ def main() -> None:
         usd_path = f"{nucleus_dir}/{asset.relative_path}"
         size_x, size_y, size_z = compute_usd_bbox_size(usd_path, purposes)
         print(f"{asset.name:<28} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}  {usd_path}")
+
+    if simulation_app is not None:
+        simulation_app.close()
 
 
 if __name__ == "__main__":
