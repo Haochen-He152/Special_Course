@@ -178,7 +178,7 @@ class TerminationsCfg:
 
     object_dropping = DoneTerm(
         func=mdp.object_height_below_minimum,
-        params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")},
+        params={"minimum_height": -0.05, "object_cfg": SceneEntityCfg("object")},
     )
 
 
