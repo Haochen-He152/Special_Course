@@ -22,31 +22,31 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 GROCERIES = {
     "OBJECT_A": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/002_master_chef_can.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_B": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/004_sugar_box.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_C": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/005_tomato_soup_can.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_D": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/006_mustard_bottle.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_E": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/007_tuna_fish_can.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/007_tuna_fish_can.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_F": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/021_bleach_cleanser.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/037_scissors.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
     "OBJECT_G": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/040_large_marker.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/040_large_marker.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
 }
