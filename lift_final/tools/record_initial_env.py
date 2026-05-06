@@ -28,6 +28,7 @@ if str(REPO_ROOT) not in sys.path:
 parser = argparse.ArgumentParser(description="Record a short video of the lift_final initial environment.")
 parser.add_argument("--task", type=str, default="Isaac-Lift-Groceries-Franka-Play-v0", help="Gym task id to preview.")
 parser.add_argument("--video-length", type=int, default=180, help="Number of environment steps to record.")
+parser.add_argument("--warmup-steps", type=int, default=5, help="Steps to run before starting video recording.")
 parser.add_argument("--output-dir", type=str, default="outputs/initial_env_video", help="Directory for video output.")
 parser.add_argument("--seed", type=int, default=42, help="Environment seed.")
 parser.add_argument(
@@ -81,6 +82,13 @@ def main() -> None:
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array")
     env.unwrapped.sim.set_camera_view(args_cli.camera_eye, args_cli.camera_target)
+    env.reset(seed=args_cli.seed)
+    action_shape = env.action_space.shape
+    actions = torch.zeros(action_shape, device=env.unwrapped.device)
+
+    for _ in range(args_cli.warmup_steps):
+        with torch.inference_mode():
+            _unpack_step(env.step(actions))
 
     video_kwargs = {
         "video_folder": str(output_dir),
@@ -90,10 +98,6 @@ def main() -> None:
         "disable_logger": True,
     }
     env = gym.wrappers.RecordVideo(env, **video_kwargs)
-
-    env.reset(seed=args_cli.seed)
-    action_shape = env.action_space.shape
-    actions = torch.zeros(action_shape, device=env.unwrapped.device)
 
     for _ in range(args_cli.video_length):
         with torch.inference_mode():

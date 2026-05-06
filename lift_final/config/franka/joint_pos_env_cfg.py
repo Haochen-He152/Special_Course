@@ -76,6 +76,9 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
 
         # Set Franka as robot
         self.scene.robot = FRANKA_PANDA_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        # RigidObjectCollection with multiple distinct USD assets follows the bin_packing example and avoids
+        # physics replication so each grocery asset is parsed with its own rigid-body properties.
+        self.scene.replicate_physics = False
 
         # Set actions for the specific robot type (franka)
         self.actions.arm_action = mdp.JointPositionActionCfg(
