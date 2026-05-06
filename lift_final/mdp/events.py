@@ -32,7 +32,7 @@ def reset_object_collection_uniform(
     env_ids = env_ids.to(device=object_collection.device, dtype=torch.long)
 
     if object_names is None:
-        object_ids = slice(None)
+        object_ids = torch.arange(object_collection.num_objects, device=object_collection.device)
     else:
         object_ids, _ = object_collection.find_objects(object_names, preserve_order=True)
 
