@@ -24,17 +24,13 @@ class UsdAsset:
 
 def ycb_asset(file_name: str) -> tuple[str, ...]:
     """Return the selected YCB asset path."""
-    return (f"Props/YCB/Axis_Aligned/{file_name}",)
+    return (f"Props/YCB/Axis_Aligned_Physics/{file_name}",)
 
 
 USD_ASSETS = [
-    UsdAsset("OBJECT_A_master_chef_can", ycb_asset("002_master_chef_can.usd")),
-    UsdAsset("OBJECT_B_sugar_box", ycb_asset("004_sugar_box.usd")),
-    UsdAsset("OBJECT_C_tomato_soup_can", ycb_asset("005_tomato_soup_can.usd")),
-    UsdAsset("OBJECT_D_mustard_bottle", ycb_asset("006_mustard_bottle.usd")),
-    UsdAsset("OBJECT_E_tuna_fish_can", ycb_asset("007_tuna_fish_can.usd")),
-    UsdAsset("OBJECT_F_scissors", ycb_asset("037_scissors.usd")),
-    UsdAsset("OBJECT_G_large_marker", ycb_asset("040_large_marker.usd")),
+    UsdAsset("OBJECT_A_sugar_box", ycb_asset("004_sugar_box.usd")),
+    UsdAsset("OBJECT_B_tomato_soup_can", ycb_asset("005_tomato_soup_can.usd")),
+    UsdAsset("OBJECT_C_mustard_bottle", ycb_asset("006_mustard_bottle.usd")),
     UsdAsset("KLT_Bin", ("Props/KLT_Bin/small_KLT.usd",)),
 ]
 

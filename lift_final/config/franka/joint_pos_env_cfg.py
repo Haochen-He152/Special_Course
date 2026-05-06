@@ -22,49 +22,26 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 GROCERIES = {
     "OBJECT_A": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/002_master_chef_can.usd",
-        scale=(0.732, 0.785, 0.733),
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
-    ),
-    "OBJECT_B": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/004_sugar_box.usd",
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
         scale=(0.701, 0.823, 1.108),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
-    "OBJECT_C": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/005_tomato_soup_can.usd",
+    "OBJECT_B": sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
         scale=(0.739, 0.687, 0.738),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
-    "OBJECT_D": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/006_mustard_bottle.usd",
+    "OBJECT_C": sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
         scale=(0.625, 1.098, 0.858),
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
-    ),
-    "OBJECT_E": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/007_tuna_fish_can.usd",
-        scale=(0.877, 1.193, 0.877),
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
-    ),
-    "OBJECT_F": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/037_scissors.usd",
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
-    ),
-    "OBJECT_G": sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned/040_large_marker.usd",
-        scale=(0.796, 1.158, 0.770),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
 }
 
 GROCERY_INITIAL_POSES = {
-    "OBJECT_A": (0.40, -0.18, 0.10),
-    "OBJECT_B": (0.40, 0.00, 0.10),
-    "OBJECT_C": (0.40, 0.18, 0.10),
-    "OBJECT_D": (0.55, -0.18, 0.10),
-    "OBJECT_E": (0.55, 0.00, 0.10),
-    "OBJECT_F": (0.55, 0.18, 0.10),
-    "OBJECT_G": (0.70, 0.00, 0.10),
+    "OBJECT_A": (0.45, -0.14, 0.10),
+    "OBJECT_B": (0.45, 0.00, 0.10),
+    "OBJECT_C": (0.45, 0.14, 0.10),
 }
 
 

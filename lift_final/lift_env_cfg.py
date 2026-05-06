@@ -131,15 +131,7 @@ class EventCfg:
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object"),
             "randomize_target": True,
-            "target_object_names": [
-                "OBJECT_A",
-                "OBJECT_B",
-                "OBJECT_C",
-                "OBJECT_D",
-                "OBJECT_E",
-                "OBJECT_F",
-                "OBJECT_G",
-            ],
+            "target_object_names": ["OBJECT_A", "OBJECT_B", "OBJECT_C"],
         },
     )
 
