@@ -34,7 +34,7 @@ if str(REPO_ROOT) not in sys.path:
 parser = argparse.ArgumentParser(description="Record a short video of the current lift_final initial environment.")
 parser.add_argument("--task", type=str, default="Isaac-Lift-Groceries-Franka-Play-v0", help="Gym task id to preview.")
 parser.add_argument("--video-length", type=int, default=180, help="Number of environment steps to record.")
-parser.add_argument("--warmup-steps", type=int, default=5, help="Steps to run before starting video recording.")
+parser.add_argument("--warmup-steps", type=int, default=0, help="Extra zero-action steps before the recorded loop.")
 parser.add_argument("--progress-interval", type=int, default=30, help="Print progress every N recorded steps.")
 parser.add_argument("--output-dir", type=str, default="outputs/initial_env_video", help="Directory for video output.")
 parser.add_argument("--seed", type=int, default=42, help="Environment seed.")
@@ -96,27 +96,31 @@ def main() -> None:
     env_cfg.scene.num_envs = 1
     env_cfg.seed = args_cli.seed
     env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
+    env_cfg.commands.object_pose.debug_vis = False
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array")
     env.unwrapped.sim.set_camera_view(args_cli.camera_eye, args_cli.camera_target)
-    print("[INFO] Resetting environment...", flush=True)
-    env.reset(seed=args_cli.seed)
+
+    video_kwargs = {
+        "video_folder": str(output_dir),
+        "step_trigger": lambda step: step == 0,
+        "video_length": args_cli.video_length + args_cli.warmup_steps,
+        "name_prefix": "lift_final_three_groceries_initial_env",
+        "disable_logger": True,
+    }
+    print("[INFO] Recording video with Gymnasium RecordVideo wrapper.", flush=True)
+    env = gym.wrappers.RecordVideo(env, **video_kwargs)
+
     action_shape = env.action_space.shape
     actions = torch.zeros(action_shape, device=env.unwrapped.device)
+
+    print("[INFO] Resetting environment...", flush=True)
+    env.reset(seed=args_cli.seed)
 
     print(f"[INFO] Running {args_cli.warmup_steps} warmup steps...", flush=True)
     for _ in range(args_cli.warmup_steps):
         with torch.inference_mode():
             _unpack_step(env.step(actions))
-
-    video_kwargs = {
-        "video_folder": str(output_dir),
-        "step_trigger": lambda step: step == 0,
-        "video_length": args_cli.video_length,
-        "name_prefix": "lift_final_three_groceries_initial_env",
-        "disable_logger": True,
-    }
-    env = gym.wrappers.RecordVideo(env, **video_kwargs)
 
     print(f"[INFO] Recording {args_cli.video_length} steps...", flush=True)
     for step in range(args_cli.video_length):
