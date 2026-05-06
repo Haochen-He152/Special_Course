@@ -228,5 +228,8 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.bounce_threshold_velocity = 0.2
         self.sim.physx.bounce_threshold_velocity = 0.01
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
-        self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
+        # Multi-object YCB scenes create far more GPU contact pairs/patches than the original single-cube task.
+        # These buffers prevent PhysX from dropping interactions when training with many parallel environments.
+        self.sim.physx.gpu_total_aggregate_pairs_capacity = 64 * 1024
+        self.sim.physx.gpu_max_rigid_patch_count = 512 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
