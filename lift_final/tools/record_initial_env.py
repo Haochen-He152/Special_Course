@@ -39,6 +39,11 @@ parser.add_argument("--progress-interval", type=int, default=30, help="Print pro
 parser.add_argument("--output-dir", type=str, default="outputs/initial_env_video", help="Directory for video output.")
 parser.add_argument("--seed", type=int, default=42, help="Environment seed.")
 parser.add_argument(
+    "--random-actions",
+    action="store_true",
+    help="Use small random actions instead of zero actions. Useful for checking that recording progresses.",
+)
+parser.add_argument(
     "--camera-eye",
     type=float,
     nargs=3,
@@ -120,11 +125,15 @@ def main() -> None:
     print(f"[INFO] Running {args_cli.warmup_steps} warmup steps...", flush=True)
     for _ in range(args_cli.warmup_steps):
         with torch.inference_mode():
+            if args_cli.random_actions:
+                actions = 0.05 * (2.0 * torch.rand(action_shape, device=env.unwrapped.device) - 1.0)
             _unpack_step(env.step(actions))
 
     print(f"[INFO] Recording {args_cli.video_length} steps...", flush=True)
     for step in range(args_cli.video_length):
         with torch.inference_mode():
+            if args_cli.random_actions:
+                actions = 0.05 * (2.0 * torch.rand(action_shape, device=env.unwrapped.device) - 1.0)
             _unpack_step(env.step(actions))
         if args_cli.progress_interval > 0 and (step + 1) % args_cli.progress_interval == 0:
             print(f"[INFO] Recorded {step + 1}/{args_cli.video_length} steps.", flush=True)
