@@ -1,14 +1,20 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers.
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Record a short headless video of the initial lift_final environment.
+"""Record a short headless video of the initial lift_final three-grocery environment.
 
 Run from an Isaac Lab checkout, for example:
 
     ./isaaclab.sh -p github/Special_Course/lift_final/tools/record_initial_env.py --headless
 
-The script creates one environment, resets it, applies zero actions for a few seconds, and saves an mp4 under
-``outputs/initial_env_video`` by default.
+The script creates one environment with the current lift_final setup:
+
+* OBJECT_A: 004_sugar_box from Axis_Aligned_Physics
+* OBJECT_B: 005_tomato_soup_can from Axis_Aligned_Physics
+* OBJECT_C: 006_mustard_bottle from Axis_Aligned_Physics
+
+It resets the scene, applies zero actions for a few seconds, and saves an mp4 under
+``outputs/initial_env_video`` by default. The server must support Isaac Sim headless camera rendering.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-parser = argparse.ArgumentParser(description="Record a short video of the lift_final initial environment.")
+parser = argparse.ArgumentParser(description="Record a short video of the current lift_final initial environment.")
 parser.add_argument("--task", type=str, default="Isaac-Lift-Groceries-Franka-Play-v0", help="Gym task id to preview.")
 parser.add_argument("--video-length", type=int, default=180, help="Number of environment steps to record.")
 parser.add_argument("--warmup-steps", type=int, default=5, help="Steps to run before starting video recording.")
@@ -60,7 +66,11 @@ import gymnasium as gym
 import torch
 
 import lift_final.config.franka  # noqa: F401  # registers the lift_final Franka tasks
-from lift_final.config.franka.joint_pos_env_cfg import FrankaCubeLiftEnvCfg_PLAY
+from lift_final.config.franka.joint_pos_env_cfg import (
+    GROCERY_INITIAL_POSES,
+    GROCERIES,
+    FrankaCubeLiftEnvCfg_PLAY,
+)
 
 
 def _unpack_step(step_result):
@@ -74,6 +84,12 @@ def _unpack_step(step_result):
 def main() -> None:
     output_dir = Path(args_cli.output_dir).expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    print("[INFO] Current lift_final objects:")
+    for object_name, spawn_cfg in GROCERIES.items():
+        print(f"  - {object_name}: {spawn_cfg.usd_path}")
+        print(f"    initial position: {GROCERY_INITIAL_POSES[object_name]}")
+    print(f"[INFO] Video output directory: {output_dir}")
 
     env_cfg = FrankaCubeLiftEnvCfg_PLAY()
     env_cfg.scene.num_envs = 1
@@ -94,7 +110,7 @@ def main() -> None:
         "video_folder": str(output_dir),
         "step_trigger": lambda step: step == 0,
         "video_length": args_cli.video_length,
-        "name_prefix": "lift_final_initial_env",
+        "name_prefix": "lift_final_three_groceries_initial_env",
         "disable_logger": True,
     }
     env = gym.wrappers.RecordVideo(env, **video_kwargs)
