@@ -19,18 +19,26 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class UsdAsset:
     name: str
-    relative_path: str
+    relative_paths: tuple[str, ...]
+
+
+def ycb_asset(file_name: str) -> tuple[str, ...]:
+    """Return candidate YCB paths, preferring physics-enabled assets."""
+    return (
+        f"Props/YCB/Axis_Aligned_Physics/{file_name}",
+        f"Props/YCB/Axis_Aligned/{file_name}",
+    )
 
 
 USD_ASSETS = [
-    UsdAsset("OBJECT_A_sugar_box", "Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd"),
-    UsdAsset("OBJECT_B_cracker_box", "Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd"),
-    UsdAsset("OBJECT_C_tomato_soup_can", "Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd"),
-    UsdAsset("OBJECT_D_mustard_bottle", "Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd"),
-    UsdAsset("OBJECT_E_tuna_fish_can", "Props/YCB/Axis_Aligned_Physics/007_tuna_fish_can.usd"),
-    UsdAsset("OBJECT_F_bleach_cleanser", "Props/YCB/Axis_Aligned_Physics/021_bleach_cleanser.usd"),
-    UsdAsset("OBJECT_G_large_marker", "Props/YCB/Axis_Aligned_Physics/040_large_marker.usd"),
-    UsdAsset("KLT_Bin", "Props/KLT_Bin/small_KLT.usd"),
+    UsdAsset("OBJECT_A_sugar_box", ycb_asset("004_sugar_box.usd")),
+    UsdAsset("OBJECT_B_cracker_box", ycb_asset("003_cracker_box.usd")),
+    UsdAsset("OBJECT_C_tomato_soup_can", ycb_asset("005_tomato_soup_can.usd")),
+    UsdAsset("OBJECT_D_mustard_bottle", ycb_asset("006_mustard_bottle.usd")),
+    UsdAsset("OBJECT_E_tuna_fish_can", ycb_asset("007_tuna_fish_can.usd")),
+    UsdAsset("OBJECT_F_bleach_cleanser", ycb_asset("021_bleach_cleanser.usd")),
+    UsdAsset("OBJECT_G_large_marker", ycb_asset("040_large_marker.usd")),
+    UsdAsset("KLT_Bin", ("Props/KLT_Bin/small_KLT.usd",)),
 ]
 
 
@@ -96,6 +104,11 @@ def main() -> None:
         choices=["default", "render", "proxy", "guide"],
         help="USD purposes included in the bounding-box computation.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Abort on the first USD that cannot be opened. By default, failed assets are reported and skipped.",
+    )
     simulation_app = None
     try:
         from isaaclab.app import AppLauncher
@@ -117,9 +130,22 @@ def main() -> None:
     print("-" * 110)
 
     for asset in USD_ASSETS:
-        usd_path = f"{nucleus_dir}/{asset.relative_path}"
-        size_x, size_y, size_z = compute_usd_bbox_size(usd_path, purposes)
-        print(f"{asset.name:<28} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}  {usd_path}")
+        errors = []
+        for relative_path in asset.relative_paths:
+            usd_path = f"{nucleus_dir}/{relative_path}"
+            try:
+                size_x, size_y, size_z = compute_usd_bbox_size(usd_path, purposes)
+                print(f"{asset.name:<28} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}  {usd_path}")
+                break
+            except Exception as exc:
+                errors.append((usd_path, exc))
+        else:
+            if args.strict:
+                raise RuntimeError(f"All candidate USD paths failed for {asset.name}: {errors}")
+            print(f"{asset.name:<28} {'FAILED':>12} {'FAILED':>12} {'FAILED':>12}  {asset.relative_paths[0]}")
+            for usd_path, exc in errors:
+                print(f"{'':<28} tried: {usd_path}")
+                print(f"{'':<28} error: {exc}")
 
     if simulation_app is not None:
         simulation_app.close()
