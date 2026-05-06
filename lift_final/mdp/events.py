@@ -36,7 +36,7 @@ def reset_object_collection_uniform(
     else:
         object_ids, _ = object_collection.find_objects(object_names, preserve_order=True)
 
-    object_state = object_collection.data.default_object_state[env_ids[:, None], object_ids].clone()
+    object_state = object_collection.data.default_object_state[env_ids][:, object_ids].clone()
     object_state[..., :3] += env.scene.env_origins[env_ids].unsqueeze(1)
 
     range_list = [pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
