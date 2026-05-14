@@ -1,17 +1,13 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers.
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Record a short headless video of the initial lift_final three-grocery environment.
+"""Record a short headless video of the initial lift_final grocery environment.
 
 Run from an Isaac Lab checkout, for example:
 
     ./isaaclab.sh -p github/Special_Course/lift_final/tools/record_initial_env.py --headless
 
-The script creates one environment with the current lift_final setup:
-
-* OBJECT_A: 004_sugar_box from Axis_Aligned_Physics
-* OBJECT_B: 005_tomato_soup_can from Axis_Aligned_Physics
-* OBJECT_C: 006_mustard_bottle from Axis_Aligned_Physics
+The script creates one environment with the current lift_final object collection.
 
 It resets the scene, applies zero actions for a few seconds, and saves an mp4 under
 ``outputs/initial_env_video`` by default. The server must support Isaac Sim headless camera rendering.
@@ -110,7 +106,7 @@ def main() -> None:
         "video_folder": str(output_dir),
         "step_trigger": lambda step: step == 0,
         "video_length": args_cli.video_length + args_cli.warmup_steps,
-        "name_prefix": "lift_final_three_groceries_initial_env",
+        "name_prefix": "lift_final_groceries_initial_env",
         "disable_logger": True,
     }
     print("[INFO] Recording video with Gymnasium RecordVideo wrapper.", flush=True)

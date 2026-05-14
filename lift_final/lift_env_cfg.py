@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import math
 from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
@@ -43,6 +44,8 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     object: RigidObjectCfg | DeformableObjectCfg | RigidObjectCollectionCfg = MISSING
     # storage bin: will be populated by agent env cfg
     bin: RigidObjectCfg = MISSING
+    # fixed box: will be populated by agent env cfg
+    box: RigidObjectCfg = MISSING
 
     # Table
     table = AssetBaseCfg(
@@ -106,6 +109,7 @@ class ObservationsCfg:
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
         object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
         target_object_id = ObsTerm(func=mdp.target_object_id_one_hot)
+        target_object_orientation = ObsTerm(func=mdp.target_object_orientation_one_hot)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
 
@@ -127,11 +131,17 @@ class EventCfg:
         func=mdp.reset_object_collection_uniform,
         mode="reset",
         params={
-            "pose_range": {"x": (-0.03, 0.03), "y": (-0.03, 0.03), "z": (0.0, 0.0)},
+            "pose_range": {
+                "x": (-0.03, 0.03),
+                "y": (-0.03, 0.03),
+                "z": (0.0, 0.0),
+                "roll": (-math.pi, math.pi),
+                "pitch": (-math.pi, math.pi),
+                "yaw": (-math.pi, math.pi),
+            },
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object"),
             "randomize_target": True,
-            "target_object_names": ["OBJECT_A", "OBJECT_B", "OBJECT_C"],
         },
     )
 

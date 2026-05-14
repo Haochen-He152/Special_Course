@@ -22,6 +22,15 @@ class UsdAsset:
     relative_paths: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class UsdInfo:
+    size: tuple[float, float, float]
+    mass_kg: float | None
+    densities: tuple[float, ...]
+    has_rigid_body: bool
+    has_collision: bool
+
+
 def ycb_asset(file_name: str) -> tuple[str, ...]:
     """Return the selected YCB asset path."""
     return (f"Props/YCB/Axis_Aligned/{file_name}",)
@@ -68,9 +77,14 @@ def resolve_purposes(purpose_names: list[str]) -> list[str]:
     return purposes
 
 
-def compute_usd_bbox_size(usd_path: str, purposes: list[str]) -> tuple[float, float, float]:
-    """Compute the world-aligned bounding-box size for a USD file."""
-    from pxr import Usd, UsdGeom
+def _read_float_attr(attr) -> float | None:
+    value = attr.Get()
+    return None if value is None else float(value)
+
+
+def read_usd_info(usd_path: str, purposes: list[str]) -> UsdInfo:
+    """Read bounding-box and authored physics information from a USD file."""
+    from pxr import Usd, UsdGeom, UsdPhysics
 
     stage = Usd.Stage.Open(usd_path)
     if stage is None:
@@ -83,8 +97,41 @@ def compute_usd_bbox_size(usd_path: str, purposes: list[str]) -> tuple[float, fl
     bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), purposes)
     bbox = bbox_cache.ComputeWorldBound(prim)
     aligned_range = bbox.ComputeAlignedRange()
-    size = aligned_range.GetSize()
-    return float(size[0]), float(size[1]), float(size[2])
+    bbox_size = aligned_range.GetSize()
+
+    masses = []
+    densities = set()
+    has_rigid_body = False
+    has_collision = False
+
+    for prim in stage.Traverse():
+        if prim.HasAPI(UsdPhysics.MassAPI):
+            mass_api = UsdPhysics.MassAPI(prim)
+            mass = _read_float_attr(mass_api.GetMassAttr())
+            density = _read_float_attr(mass_api.GetDensityAttr())
+            if mass is not None:
+                masses.append(mass)
+            if density is not None:
+                densities.add(density)
+
+        has_rigid_body = has_rigid_body or prim.HasAPI(UsdPhysics.RigidBodyAPI)
+        has_collision = has_collision or prim.HasAPI(UsdPhysics.CollisionAPI)
+
+    return UsdInfo(
+        size=(float(bbox_size[0]), float(bbox_size[1]), float(bbox_size[2])),
+        mass_kg=sum(masses) if masses else None,
+        densities=tuple(sorted(densities)),
+        has_rigid_body=has_rigid_body,
+        has_collision=has_collision,
+    )
+
+
+def format_optional_float(value: float | None) -> str:
+    return f"{value:.6f}" if value is not None else "-"
+
+
+def format_densities(densities: tuple[float, ...]) -> str:
+    return ",".join(f"{density:.6g}" for density in densities) if densities else "-"
 
 
 def main() -> None:
@@ -123,23 +170,36 @@ def main() -> None:
     print(f"Isaac Nucleus dir: {nucleus_dir}")
     print(f"Purposes: {', '.join(args.purposes)}")
     print()
-    print(f"{'asset':<28} {'size_x_m':>12} {'size_y_m':>12} {'size_z_m':>12}  usd_path")
-    print("-" * 110)
+    print(
+        f"{'asset':<28} {'size_x_m':>12} {'size_y_m':>12} {'size_z_m':>12}"
+        f" {'mass_kg':>12} {'density':>14} {'rigid_body':>10} {'collision':>10}  usd_path"
+    )
+    print("-" * 160)
 
     for asset in USD_ASSETS:
         errors = []
         for relative_path in asset.relative_paths:
             usd_path = f"{nucleus_dir}/{relative_path}"
             try:
-                size_x, size_y, size_z = compute_usd_bbox_size(usd_path, purposes)
-                print(f"{asset.name:<28} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}  {usd_path}")
+                usd_info = read_usd_info(usd_path, purposes)
+                size_x, size_y, size_z = usd_info.size
+                print(
+                    f"{asset.name:<28} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}"
+                    f" {format_optional_float(usd_info.mass_kg):>12}"
+                    f" {format_densities(usd_info.densities):>14}"
+                    f" {str(usd_info.has_rigid_body):>10}"
+                    f" {str(usd_info.has_collision):>10}  {usd_path}"
+                )
                 break
             except Exception as exc:
                 errors.append((usd_path, exc))
         else:
             if args.strict:
                 raise RuntimeError(f"All candidate USD paths failed for {asset.name}: {errors}")
-            print(f"{asset.name:<28} {'FAILED':>12} {'FAILED':>12} {'FAILED':>12}  {asset.relative_paths[0]}")
+            print(
+                f"{asset.name:<28} {'FAILED':>12} {'FAILED':>12} {'FAILED':>12}"
+                f" {'FAILED':>12} {'FAILED':>14} {'FAILED':>10} {'FAILED':>10}  {asset.relative_paths[0]}"
+            )
             for usd_path, exc in errors:
                 print(f"{'':<28} tried: {usd_path}")
                 print(f"{'':<28} error: {exc}")

@@ -24,6 +24,13 @@ def _get_target_choice_ids(env: ManagerBasedRLEnv, object: RigidObjectCollection
     return torch.zeros(env.num_envs, dtype=torch.long, device=object.device)
 
 
+def _get_target_object_ids(env: ManagerBasedRLEnv, object: RigidObjectCollection) -> torch.Tensor:
+    """Return per-env object indices for the current target object."""
+    if hasattr(env, "_target_object_ids"):
+        return env._target_object_ids
+    return torch.zeros(env.num_envs, dtype=torch.long, device=object.device)
+
+
 def object_position_in_robot_root_frame(
     env: ManagerBasedRLEnv,
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
@@ -48,3 +55,30 @@ def target_object_id_one_hot(
     object: RigidObjectCollection = env.scene[object_cfg.name]
     target_choice_ids = _get_target_choice_ids(env, object)
     return torch.nn.functional.one_hot(target_choice_ids, num_classes=object.num_objects).to(torch.float32)
+
+
+def target_object_orientation_one_hot(
+    env: ManagerBasedRLEnv,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """One-hot encoded coarse target object orientation.
+
+    The three classes indicate which target-object local axis is most aligned with the world z-axis:
+    local x, local y, or local z. The sign is ignored, so upside-down variants share the same class.
+    """
+    object: RigidObjectCollection = env.scene[object_cfg.name]
+    env_ids = torch.arange(env.num_envs, dtype=torch.long, device=object.device)
+    target_object_ids = _get_target_object_ids(env, object)
+    object_quat_w = object.data.object_quat_w[env_ids, target_object_ids]
+
+    qw, qx, qy, qz = object_quat_w.unbind(dim=-1)
+    axis_z_alignment = torch.stack(
+        [
+            2.0 * (qx * qz - qw * qy),
+            2.0 * (qy * qz + qw * qx),
+            1.0 - 2.0 * (qx * qx + qy * qy),
+        ],
+        dim=-1,
+    ).abs()
+    orientation_ids = torch.argmax(axis_z_alignment, dim=-1)
+    return torch.nn.functional.one_hot(orientation_ids, num_classes=3).to(torch.float32)

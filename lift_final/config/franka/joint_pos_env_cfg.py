@@ -36,12 +36,46 @@ GROCERIES = {
         scale=(0.625, 1.098, 0.858),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
     ),
+    "WHITE_CUBE": sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+        scale=(1.0, 1.0, 1.0),
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            solver_position_iteration_count=16,
+            solver_velocity_iteration_count=1,
+            max_angular_velocity=1000.0,
+            max_linear_velocity=1000.0,
+            max_depenetration_velocity=5.0,
+            disable_gravity=False,
+        ),
+        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 1.0)),
+    ),
+    "BLACK_CUBE": sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+        scale=(1.0, 1.0, 1.0),
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            solver_position_iteration_count=16,
+            solver_velocity_iteration_count=1,
+            max_angular_velocity=1000.0,
+            max_linear_velocity=1000.0,
+            max_depenetration_velocity=5.0,
+            disable_gravity=False,
+        ),
+        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),
+    ),
+    "TOMATO_SOUP_CAN_EXTRA": sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+        scale=(1.0, 1.0, 1.0),
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+    ),
 }
 
 GROCERY_INITIAL_POSES = {
     "OBJECT_A": (0.45, -0.14, 0.10),
     "OBJECT_B": (0.45, 0.00, 0.10),
     "OBJECT_C": (0.45, 0.14, 0.10),
+    "WHITE_CUBE": (0.35, -0.21, 0.055),
+    "BLACK_CUBE": (0.35, -0.12, 0.055),
+    "TOMATO_SOUP_CAN_EXTRA": (0.35, 0.08, 0.10),
 }
 
 
@@ -96,6 +130,20 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
                     kinematic_enabled=True,
                 ),
                 mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            ),
+        )
+
+        self.scene.box = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/CRACKER_BOX",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=(0.35, 0.21, 0.10), rot=(1.0, 0.0, 0.0, 0.0)),
+            spawn=sim_utils.UsdFileCfg(
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
+                scale=(1.0, 1.0, 1.0),
+                rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                    solver_position_iteration_count=4,
+                    solver_velocity_iteration_count=0,
+                    kinematic_enabled=True,
+                ),
             ),
         )
 

@@ -26,6 +26,9 @@ def reset_object_collection_uniform(
     object_names: list[str] | None = None,
     randomize_target: bool = False,
     target_object_names: list[str] | None = None,
+    orientation_choices: dict[str, list[tuple[float, float, float]]]
+    | list[tuple[float, float, float]]
+    | None = None,
 ):
     """Reset rigid objects in a collection with uniform pose and velocity noise."""
     object_collection: RigidObjectCollection = env.scene[asset_cfg.name]
@@ -33,8 +36,9 @@ def reset_object_collection_uniform(
 
     if object_names is None:
         object_ids = torch.arange(object_collection.num_objects, device=object_collection.device)
+        selected_object_names = object_collection.object_names
     else:
-        object_ids, _ = object_collection.find_objects(object_names, preserve_order=True)
+        object_ids, selected_object_names = object_collection.find_objects(object_names, preserve_order=True)
 
     object_state = object_collection.data.default_object_state[env_ids][:, object_ids].clone()
     object_state[..., :3] += env.scene.env_origins[env_ids].unsqueeze(1)
@@ -51,6 +55,25 @@ def reset_object_collection_uniform(
     object_state[..., :3] += samples[..., :3]
     orientations_delta = math_utils.quat_from_euler_xyz(samples[..., 3], samples[..., 4], samples[..., 5])
     object_state[..., 3:7] = math_utils.quat_mul(object_state[..., 3:7], orientations_delta)
+
+    if orientation_choices is not None:
+        for index, object_name in enumerate(selected_object_names):
+            if isinstance(orientation_choices, dict):
+                choices = orientation_choices.get(object_name, orientation_choices.get("*"))
+            else:
+                choices = orientation_choices
+            if not choices:
+                continue
+
+            choices_tensor = torch.tensor(choices, dtype=torch.float, device=object_collection.device)
+            choice_ids = torch.randint(len(choices), (len(env_ids),), device=object_collection.device)
+            chosen_euler = choices_tensor[choice_ids]
+            discrete_orientation_delta = math_utils.quat_from_euler_xyz(
+                chosen_euler[:, 0], chosen_euler[:, 1], chosen_euler[:, 2]
+            )
+            object_state[:, index, 3:7] = math_utils.quat_mul(
+                object_state[:, index, 3:7], discrete_orientation_delta
+            )
 
     range_list = [velocity_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
     ranges = torch.tensor(range_list, device=object_collection.device)
