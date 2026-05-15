@@ -55,7 +55,7 @@ agent:
   # Number of steps collected per environment before each PPO update.
   rollouts: 32
   # Number of optimization passes over each collected rollout batch.
-  learning_epochs: 8
+  learning_epochs: 5
   # Number of mini-batches used within each learning epoch.
   mini_batches: 4
   # Reward discount factor. Higher values make the policy care more about future rewards.
@@ -63,7 +63,7 @@ agent:
   # GAE parameter for advantage estimation. 0.95 is a common stability/variance tradeoff.
   lambda: 0.95
   # Conservative learning rate for the harder randomized multi-object task.
-  learning_rate: 5.0e-05
+  learning_rate: 1.0e-04
   # Adapt the learning rate based on policy KL divergence to keep PPO updates stable.
   learning_rate_scheduler: KLAdaptiveLR
   learning_rate_scheduler_kwargs:
@@ -84,7 +84,7 @@ agent:
   value_clip: 0.2
   clip_predicted_values: True
   # Entropy bonus encourages exploration, useful when the target object is randomized.
-  entropy_loss_scale: 0.002
+  entropy_loss_scale: 0.001
   # Weight of critic/value loss relative to policy loss.
   value_loss_scale: 2.0
   kl_threshold: 0.0
