@@ -200,13 +200,9 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    action_rate = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "action_rate", "weight": -1e-1, "num_steps": 10000}
-    )
-
-    joint_vel = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "joint_vel", "weight": -1e-1, "num_steps": 10000}
-    )
+    # Disabled for the multi-object grocery task. The original lift task increases action-rate and joint-velocity
+    # penalties at 10k steps, but that is too early for this harder randomized scene and can suppress exploration.
+    pass
 
 
 ##
