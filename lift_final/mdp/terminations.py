@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 def _get_object_pos_w(
     env: ManagerBasedRLEnv,
     object: RigidObjectCollection,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
 ) -> torch.Tensor:
     """Return the current target object's position from a rigid object collection."""
     if hasattr(env, "_target_object_ids"):
@@ -40,7 +40,7 @@ def object_reached_goal(
     env: ManagerBasedRLEnv,
     command_name: str = "object_pose",
     threshold: float = 0.02,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
@@ -72,7 +72,7 @@ def object_reached_goal(
 def object_height_below_minimum(
     env: ManagerBasedRLEnv,
     minimum_height: float,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
     """Terminate when the target object falls below the minimum height."""

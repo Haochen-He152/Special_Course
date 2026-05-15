@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 def _get_object_pos_w(
     env: ManagerBasedRLEnv,
     object: RigidObjectCollection,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
 ) -> torch.Tensor:
     """Return the current target object's position from a rigid object collection."""
     if hasattr(env, "_target_object_ids"):
@@ -34,7 +34,7 @@ def _get_object_pos_w(
 def object_is_lifted(
     env: ManagerBasedRLEnv,
     minimal_height: float,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
     """Reward the agent for lifting the target object above the minimal height."""
@@ -46,7 +46,7 @@ def object_is_lifted(
 def object_ee_distance(
     env: ManagerBasedRLEnv,
     std: float,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
 ) -> torch.Tensor:
@@ -69,7 +69,7 @@ def object_goal_distance(
     std: float,
     minimal_height: float,
     command_name: str,
-    object_name: str = "OBJECT_A",
+    object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:

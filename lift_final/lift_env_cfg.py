@@ -44,8 +44,12 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     object: RigidObjectCfg | DeformableObjectCfg | RigidObjectCollectionCfg = MISSING
     # storage bin: will be populated by agent env cfg
     bin: RigidObjectCfg = MISSING
-    # fixed box: will be populated by agent env cfg
-    box: RigidObjectCfg = MISSING
+    # trash bin beside the table: will be populated by agent env cfg
+    trash_bin: RigidObjectCfg | None = None
+    # pedestal used to lift the trash bin top to table height
+    trash_bin_stand: RigidObjectCfg | None = None
+    # optional fixed box: not used by the grocery lift task
+    box: RigidObjectCfg | None = None
 
     # Table
     table = AssetBaseCfg(
@@ -215,7 +219,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the lifting environment."""
 
     # Scene settings
-    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=512, env_spacing=2.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()

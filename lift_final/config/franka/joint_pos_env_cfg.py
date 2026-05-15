@@ -21,25 +21,25 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 
 GROCERIES = {
-    "OBJECT_A": sim_utils.UsdFileCfg(
+    "sugar_box": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
         scale=(0.701, 0.823, 1.108),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
         mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
     ),
-    "OBJECT_B": sim_utils.UsdFileCfg(
+    "tomato_soup_can": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
         scale=(0.739, 0.687, 0.738),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
         mass_props=sim_utils.MassPropertiesCfg(mass=0.4),
     ),
-    "OBJECT_C": sim_utils.UsdFileCfg(
+    "mustard_bottle": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
         scale=(0.625, 1.098, 0.858),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
         mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
     ),
-    "WHITE_CUBE": sim_utils.UsdFileCfg(
+    "white_cube": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
         scale=(0.833333, 0.833333, 0.833333),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -52,7 +52,7 @@ GROCERIES = {
         ),
         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 1.0)),
     ),
-    "BLACK_CUBE": sim_utils.UsdFileCfg(
+    "black_cube": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
         scale=(0.5, 0.5, 0.5),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -65,7 +65,7 @@ GROCERIES = {
         ),
         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),
     ),
-    "TOMATO_SOUP_CAN_EXTRA": sim_utils.UsdFileCfg(
+    "small_tomato_soup_can": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
         scale=(0.739, 0.687, 0.738),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
@@ -74,13 +74,24 @@ GROCERIES = {
 }
 
 GROCERY_INITIAL_POSES = {
-    "OBJECT_A": (0.45, -0.14, 0.10),
-    "OBJECT_B": (0.45, 0.00, 0.10),
-    "OBJECT_C": (0.45, 0.14, 0.10),
-    "WHITE_CUBE": (0.35, -0.21, 0.055),
-    "BLACK_CUBE": (0.35, -0.12, 0.055),
-    "TOMATO_SOUP_CAN_EXTRA": (0.35, 0.08, 0.10),
+    "sugar_box": (0.45, -0.14, 0.10),
+    "tomato_soup_can": (0.45, 0.00, 0.10),
+    "mustard_bottle": (0.45, 0.14, 0.10),
+    "white_cube": (0.35, -0.21, 0.055),
+    "black_cube": (0.35, -0.12, 0.055),
+    "small_tomato_soup_can": (0.35, 0.08, 0.10),
 }
+
+TRASH_BIN_SIZE = (0.197843, 0.296635, 0.146360)
+GROUND_Z = -1.05
+TABLE_TOP_Z = 0.0
+TRASH_BIN_STAND_HEIGHT = TABLE_TOP_Z - GROUND_Z - TRASH_BIN_SIZE[2]
+TRASH_BIN_STAND_POS = (0.78, 0.42, GROUND_Z + TRASH_BIN_STAND_HEIGHT / 2.0)
+TRASH_BIN_POS = (
+    TRASH_BIN_STAND_POS[0],
+    TRASH_BIN_STAND_POS[1],
+    TABLE_TOP_Z - TRASH_BIN_SIZE[2] / 2.0,
+)
 
 
 @configclass
@@ -126,6 +137,35 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
         self.scene.bin = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/KLT_Bin",
             init_state=RigidObjectCfg.InitialStateCfg(pos=(0.70, -0.32, 0.08), rot=(1.0, 0.0, 0.0, 0.0)),
+            spawn=sim_utils.UsdFileCfg(
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/KLT_Bin/small_KLT.usd",
+                rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                    solver_position_iteration_count=4,
+                    solver_velocity_iteration_count=0,
+                    kinematic_enabled=True,
+                ),
+                mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            ),
+        )
+
+        self.scene.trash_bin_stand = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/TrashBinStand",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=TRASH_BIN_STAND_POS, rot=(1.0, 0.0, 0.0, 0.0)),
+            spawn=sim_utils.CuboidCfg(
+                size=(TRASH_BIN_SIZE[0], TRASH_BIN_SIZE[1], TRASH_BIN_STAND_HEIGHT),
+                rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                    solver_position_iteration_count=4,
+                    solver_velocity_iteration_count=0,
+                    kinematic_enabled=True,
+                ),
+                mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+                visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.35, 0.35, 0.35)),
+            ),
+        )
+
+        self.scene.trash_bin = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/TrashBin",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=TRASH_BIN_POS, rot=(1.0, 0.0, 0.0, 0.0)),
             spawn=sim_utils.UsdFileCfg(
                 usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/KLT_Bin/small_KLT.usd",
                 rigid_props=sim_utils.RigidBodyPropertiesCfg(
