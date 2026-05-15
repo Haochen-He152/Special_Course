@@ -107,7 +107,7 @@ class ObservationsCfg:
 
         joint_pos = ObsTerm(func=mdp.joint_pos_rel)
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
+        object_position = ObsTerm(func=mdp.target_object_position_in_robot_root_frame)
         target_object_id = ObsTerm(func=mdp.target_object_id_one_hot)
         target_object_orientation = ObsTerm(func=mdp.target_object_orientation_one_hot)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
@@ -132,15 +132,15 @@ class EventCfg:
         mode="reset",
         params={
             "pose_range": {
-                "x": (-0.03, 0.03),
-                "y": (-0.03, 0.03),
-                "z": (0.0, 0.0),
+                "x": (0.30, 0.65),
+                "y": (-0.30, 0.30),
                 "roll": (-math.pi, math.pi),
                 "pitch": (-math.pi, math.pi),
                 "yaw": (-math.pi, math.pi),
             },
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object"),
+            "absolute_position": True,
             "randomize_target": True,
         },
     )

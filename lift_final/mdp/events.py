@@ -26,11 +26,17 @@ def reset_object_collection_uniform(
     object_names: list[str] | None = None,
     randomize_target: bool = False,
     target_object_names: list[str] | None = None,
+    absolute_position: bool = False,
     orientation_choices: dict[str, list[tuple[float, float, float]]]
     | list[tuple[float, float, float]]
     | None = None,
 ):
-    """Reset rigid objects in a collection with uniform pose and velocity noise."""
+    """Reset rigid objects in a collection with uniform pose and velocity noise.
+
+    When ``absolute_position`` is true, sampled x/y/z values are interpreted as
+    table/world coordinates relative to each environment origin instead of
+    offsets from the objects' default poses.
+    """
     object_collection: RigidObjectCollection = env.scene[asset_cfg.name]
     env_ids = env_ids.to(device=object_collection.device, dtype=torch.long)
 
@@ -52,7 +58,13 @@ def reset_object_collection_uniform(
         device=object_collection.device,
     )
 
-    object_state[..., :3] += samples[..., :3]
+    if absolute_position:
+        env_origins = env.scene.env_origins[env_ids].unsqueeze(1)
+        for dim, key in enumerate(["x", "y", "z"]):
+            if key in pose_range:
+                object_state[..., dim] = env_origins[..., dim] + samples[..., dim]
+    else:
+        object_state[..., :3] += samples[..., :3]
     orientations_delta = math_utils.quat_from_euler_xyz(samples[..., 3], samples[..., 4], samples[..., 5])
     object_state[..., 3:7] = math_utils.quat_mul(object_state[..., 3:7], orientations_delta)
 

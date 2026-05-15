@@ -1,7 +1,7 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers.
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Print original bounding-box sizes for the USD assets used by lift_final.
+"""Print original bounding-box sizes for the six grocery USD assets used by lift_final.
 
 Run this script in an Isaac Sim / USD Python environment, for example with Isaac Lab's python launcher.
 
@@ -48,8 +48,6 @@ USD_ASSETS = [
     UsdAsset("WHITE_CUBE", block_asset("dex_cube_instanceable.usd")),
     UsdAsset("BLACK_CUBE", block_asset("dex_cube_instanceable.usd")),
     UsdAsset("TOMATO_SOUP_CAN_EXTRA", ycb_asset("005_tomato_soup_can.usd")),
-    UsdAsset("CRACKER_BOX", ycb_asset("003_cracker_box.usd")),
-    UsdAsset("KLT_Bin", ("Props/KLT_Bin/small_KLT.usd",)),
 ]
 
 

@@ -47,6 +47,21 @@ def object_position_in_robot_root_frame(
     return object_pos_b.reshape(env.num_envs, -1)
 
 
+def target_object_position_in_robot_root_frame(
+    env: ManagerBasedRLEnv,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """The current target object's position in the robot's root frame."""
+    robot: RigidObject = env.scene[robot_cfg.name]
+    object: RigidObjectCollection = env.scene[object_cfg.name]
+    env_ids = torch.arange(env.num_envs, dtype=torch.long, device=object.device)
+    target_object_ids = _get_target_object_ids(env, object)
+    object_pos_w = object.data.object_pos_w[env_ids, target_object_ids]
+    object_pos_b, _ = subtract_frame_transforms(robot.data.root_pos_w, robot.data.root_quat_w, object_pos_w)
+    return object_pos_b
+
+
 def target_object_id_one_hot(
     env: ManagerBasedRLEnv,
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
