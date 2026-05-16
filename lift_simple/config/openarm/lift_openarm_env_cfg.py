@@ -3,11 +3,15 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import math
+"""
+We modified parts of the environment, such as the target's position and orientation,
+as well as certain object properties, to better suit the smaller robot.
+"""
+
 from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg, DeformableObjectCfg, RigidObjectCfg, RigidObjectCollectionCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, DeformableObjectCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
@@ -22,7 +26,7 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdF
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from . import mdp
+from ... import mdp
 
 ##
 # Scene definition
@@ -41,15 +45,7 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     # end-effector sensor: will be populated by agent env cfg
     ee_frame: FrameTransformerCfg = MISSING
     # target object: will be populated by agent env cfg
-    object: RigidObjectCfg | DeformableObjectCfg | RigidObjectCollectionCfg = MISSING
-    # storage bin: will be populated by agent env cfg
-    bin: RigidObjectCfg = MISSING
-    # trash bin beside the table: will be populated by agent env cfg
-    trash_bin: RigidObjectCfg | None = None
-    # pedestal used to lift the trash bin top to table height
-    trash_bin_stand: RigidObjectCfg | None = None
-    # optional fixed box: not used by the grocery lift task
-    box: RigidObjectCfg | None = None
+    object: RigidObjectCfg | DeformableObjectCfg = MISSING
 
     # Table
     table = AssetBaseCfg(
@@ -87,7 +83,12 @@ class CommandsCfg:
         resampling_time_range=(5.0, 5.0),
         debug_vis=True,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
-            pos_x=(0.4, 0.6), pos_y=(-0.25, 0.25), pos_z=(0.25, 0.5), roll=(0.0, 0.0), pitch=(0.0, 0.0), yaw=(0.0, 0.0)
+            pos_x=(0.2, 0.4),
+            pos_y=(-0.2, 0.2),
+            pos_z=(0.15, 0.4),
+            roll=(0.0, 0.0),
+            pitch=(0.0, 0.0),
+            yaw=(0.0, 0.0),
         ),
     )
 
@@ -109,11 +110,15 @@ class ObservationsCfg:
     class PolicyCfg(ObsGroup):
         """Observations for policy group."""
 
-        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        object_position = ObsTerm(func=mdp.target_object_position_in_robot_root_frame)
-        target_object_id = ObsTerm(func=mdp.target_object_id_one_hot)
-        target_object_orientation = ObsTerm(func=mdp.target_object_orientation_one_hot)
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel,
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel_rel,
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
+        )
+        object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
 
@@ -132,22 +137,12 @@ class EventCfg:
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
     reset_object_position = EventTerm(
-        func=mdp.reset_object_collection_uniform,
+        func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "pose_range": {
-                "x": (0.30, 0.65),
-                "y": (-0.30, 0.30),
-                "roll": (-math.pi, math.pi),
-                "pitch": (-math.pi, math.pi),
-                "yaw": (-math.pi, math.pi),
-            },
+            "pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
             "velocity_range": {},
-            "asset_cfg": SceneEntityCfg("object"),
-            "absolute_position": True,
-            "min_separation": 0.18,
-            "max_resample_attempts": 100,
-            "randomize_target": True,
+            "asset_cfg": SceneEntityCfg("object", body_names="Object"),
         },
     )
 
@@ -156,13 +151,9 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.0)
+    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.1)
 
-    lifting_object = RewTerm(
-        func=mdp.object_is_lifted,
-        params={"minimal_height": 0.04},
-        weight=15.0,
-    )
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
@@ -182,7 +173,7 @@ class RewardsCfg:
     joint_vel = RewTerm(
         func=mdp.joint_vel_l2,
         weight=-1e-4,
-        params={"asset_cfg": SceneEntityCfg("robot")},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
     )
 
 
@@ -193,8 +184,8 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
     object_dropping = DoneTerm(
-        func=mdp.object_height_below_minimum,
-        params={"minimum_height": -0.05, "object_cfg": SceneEntityCfg("object")},
+        func=mdp.root_height_below_minimum,
+        params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")},
     )
 
 
@@ -202,9 +193,15 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    # Disabled for the multi-object grocery task. The original lift task increases action-rate and joint-velocity
-    # penalties at 10k steps, but that is too early for this harder randomized scene and can suppress exploration.
-    pass
+    action_rate = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_rate", "weight": -1e-1, "num_steps": 10000},
+    )
+
+    joint_vel = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "joint_vel", "weight": -1e-1, "num_steps": 10000},
+    )
 
 
 ##
@@ -217,7 +214,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the lifting environment."""
 
     # Scene settings
-    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=512, env_spacing=2.5)
+    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=2.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -237,11 +234,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.01  # 100Hz
         self.sim.render_interval = self.decimation
 
-        self.sim.physx.bounce_threshold_velocity = 0.2
         self.sim.physx.bounce_threshold_velocity = 0.01
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
-        # Multi-object YCB scenes create far more GPU contact pairs/patches than the original single-cube task.
-        # These buffers prevent PhysX from dropping interactions when training with many parallel environments.
-        self.sim.physx.gpu_total_aggregate_pairs_capacity = 64 * 1024
-        self.sim.physx.gpu_max_rigid_patch_count = 512 * 1024
+        self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625

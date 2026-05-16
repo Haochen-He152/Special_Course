@@ -113,7 +113,6 @@ class ObservationsCfg:
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
         object_position = ObsTerm(func=mdp.target_object_position_in_robot_root_frame)
         target_object_id = ObsTerm(func=mdp.target_object_id_one_hot)
-        target_object_orientation = ObsTerm(func=mdp.target_object_orientation_one_hot)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
 
@@ -138,8 +137,6 @@ class EventCfg:
             "pose_range": {
                 "x": (0.30, 0.65),
                 "y": (-0.30, 0.30),
-                "roll": (-math.pi, math.pi),
-                "pitch": (-math.pi, math.pi),
                 "yaw": (-math.pi, math.pi),
             },
             "velocity_range": {},
