@@ -136,15 +136,40 @@ def print_prim_bboxes(usd_path: str, purposes: list[str], min_size: float) -> No
     print(f"{'prim_path':<72} {'type':<12} {'size_x_m':>12} {'size_y_m':>12} {'size_z_m':>12}")
     print("-" * 125)
 
-    for prim in stage.Traverse():
+    def print_bbox(prim, label_prefix: str = "") -> bool:
         aligned_range = bbox_cache.ComputeWorldBound(prim).ComputeAlignedRange()
         if aligned_range.IsEmpty():
-            continue
+            return False
         size = aligned_range.GetSize()
         size_x, size_y, size_z = float(size[0]), float(size[1]), float(size[2])
         if max(size_x, size_y, size_z) < min_size:
-            continue
-        print(f"{str(prim.GetPath()):<72} {prim.GetTypeName():<12} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}")
+            return False
+        print(
+            f"{label_prefix}{str(prim.GetPath()):<72} {prim.GetTypeName():<12}"
+            f" {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}"
+        )
+        return True
+
+    printed_count = 0
+    for prim in stage.Traverse():
+        printed_count += int(print_bbox(prim))
+
+    prototypes = list(stage.GetPrototypes())
+    if prototypes:
+        print()
+        print("Prototype prim bounding boxes:")
+        print(f"{'prim_path':<72} {'type':<12} {'size_x_m':>12} {'size_y_m':>12} {'size_z_m':>12}")
+        print("-" * 125)
+        for prototype in prototypes:
+            for prim in Usd.PrimRange(prototype):
+                printed_count += int(print_bbox(prim, label_prefix="[prototype] "))
+
+    if printed_count <= 2:
+        print()
+        print(
+            "Only high-level Xform prims were found. The table mesh may be stored in a referenced or "
+            "instance-prototype asset that this USD does not expose as normal child prims."
+        )
 
 
 def resolve_purposes(purpose_names: list[str]) -> list[str]:
