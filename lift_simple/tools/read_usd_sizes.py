@@ -1,13 +1,13 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers.
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Print original bounding-box sizes for the six grocery USD assets used by lift_final.
+"""Print original bounding-box sizes for the lift_simple groceries and table.
 
 Run this script in an Isaac Sim / USD Python environment, for example with Isaac Lab's python launcher.
 
 Examples:
-    ./isaaclab.sh -p lift_final/tools/read_usd_sizes.py
-    ./isaaclab.sh -p lift_final/tools/read_usd_sizes.py --nucleus-dir /Isaac
+    ./isaaclab.sh -p lift_simple/tools/read_usd_sizes.py
+    ./isaaclab.sh -p lift_simple/tools/read_usd_sizes.py --nucleus-dir /Isaac
 """
 
 from __future__ import annotations
@@ -41,6 +41,11 @@ def block_asset(file_name: str) -> tuple[str, ...]:
     return (f"Props/Blocks/DexCube/{file_name}",)
 
 
+def table_asset(file_name: str) -> tuple[str, ...]:
+    """Return the selected table asset path."""
+    return (f"Props/Mounts/SeattleLabTable/{file_name}",)
+
+
 USD_ASSETS = [
     UsdAsset("OBJECT_A_sugar_box", ycb_asset("004_sugar_box.usd")),
     UsdAsset("OBJECT_B_tomato_soup_can", ycb_asset("005_tomato_soup_can.usd")),
@@ -48,6 +53,7 @@ USD_ASSETS = [
     UsdAsset("WHITE_CUBE", block_asset("dex_cube_instanceable.usd")),
     UsdAsset("BLACK_CUBE", block_asset("dex_cube_instanceable.usd")),
     UsdAsset("TOMATO_SOUP_CAN_EXTRA", ycb_asset("005_tomato_soup_can.usd")),
+    UsdAsset("TABLE", table_asset("table_instanceable.usd")),
 ]
 
 

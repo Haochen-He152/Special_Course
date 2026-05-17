@@ -29,7 +29,7 @@ GROCERIES = {
     ),
     "tomato_soup_can": sim_utils.UsdFileCfg(
         usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
-        scale=(0.739, 0.687, 0.738),
+        scale=(1.109, 1.080, 1.108),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
         mass_props=sim_utils.MassPropertiesCfg(mass=0.4),
     ),
