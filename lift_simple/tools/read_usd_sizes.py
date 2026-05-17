@@ -122,6 +122,31 @@ def read_usd_info(usd_path: str, purposes: list[str]) -> UsdInfo:
     )
 
 
+def print_prim_bboxes(usd_path: str, purposes: list[str], min_size: float) -> None:
+    """Print non-empty prim bounding boxes for inspecting sub-parts of an asset."""
+    from pxr import Usd, UsdGeom
+
+    stage = Usd.Stage.Open(usd_path)
+    if stage is None:
+        raise RuntimeError(f"Could not open USD: {usd_path}")
+
+    bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), purposes)
+    print()
+    print(f"Prim bounding boxes for: {usd_path}")
+    print(f"{'prim_path':<72} {'type':<12} {'size_x_m':>12} {'size_y_m':>12} {'size_z_m':>12}")
+    print("-" * 125)
+
+    for prim in stage.Traverse():
+        aligned_range = bbox_cache.ComputeWorldBound(prim).ComputeAlignedRange()
+        if aligned_range.IsEmpty():
+            continue
+        size = aligned_range.GetSize()
+        size_x, size_y, size_z = float(size[0]), float(size[1]), float(size[2])
+        if max(size_x, size_y, size_z) < min_size:
+            continue
+        print(f"{str(prim.GetPath()):<72} {prim.GetTypeName():<12} {size_x:12.6f} {size_y:12.6f} {size_z:12.6f}")
+
+
 def resolve_purposes(purpose_names: list[str]) -> list[str]:
     """Convert CLI purpose names to USD tokens."""
     from pxr import UsdGeom
@@ -161,6 +186,17 @@ def main() -> None:
         "--strict",
         action="store_true",
         help="Abort on the first USD that cannot be opened. By default, failed assets are reported and skipped.",
+    )
+    parser.add_argument(
+        "--inspect-table",
+        action="store_true",
+        help="Also print per-prim bounding boxes for the SeattleLabTable asset.",
+    )
+    parser.add_argument(
+        "--prim-min-size",
+        type=float,
+        default=0.01,
+        help="Minimum prim bbox size to print when using --inspect-table.",
     )
     simulation_app = None
     try:
@@ -212,6 +248,10 @@ def main() -> None:
             for usd_path, exc in errors:
                 print(f"{'':<28} tried: {usd_path}")
                 print(f"{'':<28} error: {exc}")
+
+    if args.inspect_table:
+        table_path = f"{nucleus_dir}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
+        print_prim_bboxes(table_path, purposes, args.prim_min_size)
 
     if simulation_app is not None:
         simulation_app.close()

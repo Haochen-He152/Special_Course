@@ -31,16 +31,37 @@ def _get_object_pos_w(
     return object.data.object_pos_w[:, object_ids[0], :3]
 
 
+def _get_object_default_pos_w(
+    env: ManagerBasedRLEnv,
+    object: RigidObjectCollection,
+    object_name: str = "sugar_box",
+) -> torch.Tensor:
+    """Return the current target object's default position in world frame."""
+    if hasattr(env, "_target_object_ids"):
+        env_ids = torch.arange(env.num_envs, device=object.device)
+        object_pos_w = object.data.default_object_state[env_ids, env._target_object_ids, :3]
+    else:
+        object_ids, _ = object.find_objects(object_name, preserve_order=True)
+        object_pos_w = object.data.default_object_state[:, object_ids[0], :3]
+    return object_pos_w + env.scene.env_origins
+
+
 def object_is_lifted(
     env: ManagerBasedRLEnv,
-    minimal_height: float,
+    minimal_height: float = 0.04,
+    height_offset: float | None = None,
     object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
     """Reward the agent for lifting the target object above the minimal height."""
     object: RigidObjectCollection = env.scene[object_cfg.name]
     object_pos_w = _get_object_pos_w(env, object, object_name)
-    return torch.where(object_pos_w[:, 2] > minimal_height, 1.0, 0.0)
+    if height_offset is not None:
+        default_object_pos_w = _get_object_default_pos_w(env, object, object_name)
+        height_threshold = default_object_pos_w[:, 2] + height_offset
+    else:
+        height_threshold = minimal_height
+    return torch.where(object_pos_w[:, 2] > height_threshold, 1.0, 0.0)
 
 
 def object_ee_distance(
@@ -67,8 +88,9 @@ def object_ee_distance(
 def object_goal_distance(
     env: ManagerBasedRLEnv,
     std: float,
-    minimal_height: float,
     command_name: str,
+    minimal_height: float = 0.04,
+    height_offset: float | None = None,
     object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
@@ -85,4 +107,9 @@ def object_goal_distance(
     # distance of the end-effector to the object: (num_envs,)
     distance = torch.norm(des_pos_w - object_pos_w, dim=1)
     # rewarded if the object is lifted above the threshold
-    return (object_pos_w[:, 2] > minimal_height) * (1 - torch.tanh(distance / std))
+    if height_offset is not None:
+        default_object_pos_w = _get_object_default_pos_w(env, object, object_name)
+        height_threshold = default_object_pos_w[:, 2] + height_offset
+    else:
+        height_threshold = minimal_height
+    return (object_pos_w[:, 2] > height_threshold) * (1 - torch.tanh(distance / std))
