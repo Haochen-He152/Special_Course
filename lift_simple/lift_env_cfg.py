@@ -135,16 +135,16 @@ class EventCfg:
         mode="reset",
         params={
             "pose_range": {
-                "x": (0.30, 0.65),
-                "y": (-0.30, 0.30),
+                # Table sampling region centered around the original lift cube pose at x=0.45, y=0.0.
+                "x": (0.15, 0.75),
+                "y": (-0.25, 0.25),
                 "yaw": (-math.pi, math.pi),
             },
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object"),
             "absolute_position": True,
-            "min_separation": 0.18,
-            "max_resample_attempts": 100,
             "randomize_target": True,
+            "spawn_only_target": True,
         },
     )
 
