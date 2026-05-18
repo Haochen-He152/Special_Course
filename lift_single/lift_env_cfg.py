@@ -104,7 +104,7 @@ class ObservationsCfg:
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
         object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
         target_object_position = ObsTerm(
-            func=mdp.object_goal_position_above_object_in_robot_root_frame,
+            func=mdp.object_goal_pose_above_object_in_robot_root_frame,
             params={"goal_height_offset": 0.20},
         )
         actions = ObsTerm(func=mdp.last_action)
