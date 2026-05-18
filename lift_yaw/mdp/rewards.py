@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
+def _yaw_from_quat_wxyz(quat_wxyz: torch.Tensor) -> torch.Tensor:
+    """Return yaw angle from a quaternion in ``(w, x, y, z)`` format."""
+    qw, qx, qy, qz = quat_wxyz.unbind(dim=-1)
+    return torch.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
+
+
 def object_is_lifted(
     env: ManagerBasedRLEnv,
     minimal_height: float = 0.04,
@@ -86,6 +92,61 @@ def gripper_closed_far_from_object(
     finger_pos = robot.data.joint_pos[:, finger_joint_ids]
     gripper_closed = 1.0 - torch.clamp(finger_pos.mean(dim=1) / open_width, min=0.0, max=1.0)
     return far_from_object * gripper_closed
+
+
+def gripper_closed_near_object(
+    env: ManagerBasedRLEnv,
+    near_threshold: float = 0.12,
+    std: float = 0.08,
+    open_width: float = 0.04,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
+    finger_joint_names: list[str] = ["panda_finger.*"],
+) -> torch.Tensor:
+    """Reward closing the gripper after the end-effector is close to the object."""
+    robot: Articulation = env.scene[robot_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
+    ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
+
+    object_pos_w = object.data.root_pos_w[:, :3]
+    ee_w = ee_frame.data.target_pos_w[..., 0, :]
+    distance = torch.norm(object_pos_w - ee_w, dim=1)
+    near_object = (distance < near_threshold).float()
+    proximity_reward = 1.0 - torch.tanh(distance / std)
+
+    finger_joint_ids, _ = robot.find_joints(finger_joint_names, preserve_order=True)
+    finger_pos = robot.data.joint_pos[:, finger_joint_ids]
+    gripper_closed = 1.0 - torch.clamp(finger_pos.mean(dim=1) / open_width, min=0.0, max=1.0)
+    return near_object * proximity_reward * gripper_closed
+
+
+def ee_object_yaw_alignment(
+    env: ManagerBasedRLEnv,
+    near_threshold: float = 0.18,
+    std: float = 0.12,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
+) -> torch.Tensor:
+    """Reward aligning the end-effector yaw with the object's yaw near the object.
+
+    A parallel gripper is symmetric under a 180 degree yaw flip, so the reward uses
+    ``cos(2 * yaw_error)`` instead of ``cos(yaw_error)``.
+    """
+    object: RigidObject = env.scene[object_cfg.name]
+    ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
+
+    object_pos_w = object.data.root_pos_w[:, :3]
+    ee_w = ee_frame.data.target_pos_w[..., 0, :]
+    distance = torch.norm(object_pos_w - ee_w, dim=1)
+    near_object = (distance < near_threshold).float()
+    proximity_reward = 1.0 - torch.tanh(distance / std)
+
+    object_yaw = _yaw_from_quat_wxyz(object.data.root_quat_w)
+    ee_yaw = _yaw_from_quat_wxyz(ee_frame.data.target_quat_w[..., 0, :])
+    yaw_error = ee_yaw - object_yaw
+    alignment_reward = 0.5 * (torch.cos(2.0 * yaw_error) + 1.0)
+    return near_object * proximity_reward * alignment_reward
 
 
 def object_goal_distance(
