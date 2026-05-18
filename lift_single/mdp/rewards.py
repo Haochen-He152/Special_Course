@@ -12,7 +12,6 @@ import torch
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import FrameTransformer
-from isaaclab.utils.math import combine_frame_transforms
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -91,23 +90,18 @@ def gripper_closed_when_near_object(
 def object_goal_distance(
     env: ManagerBasedRLEnv,
     std: float,
-    command_name: str,
+    goal_height_offset: float = 0.20,
     minimal_height: float = 0.04,
     height_offset: float | None = None,
-    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Reward the agent for tracking the goal pose using tanh-kernel."""
-    # extract the used quantities (to enable type-hinting)
-    robot: RigidObject = env.scene[robot_cfg.name]
+    """Reward the object for staying close to the goal above its current x/y position."""
     object: RigidObject = env.scene[object_cfg.name]
-    command = env.command_manager.get_command(command_name)
-    # compute the desired position in the world frame
-    des_pos_b = command[:, :3]
-    des_pos_w, _ = combine_frame_transforms(robot.data.root_pos_w, robot.data.root_quat_w, des_pos_b)
-    # distance of the end-effector to the object: (num_envs,)
-    distance = torch.norm(des_pos_w - object.data.root_pos_w, dim=1)
-    # rewarded if the object is lifted above the threshold
+
+    goal_pos_w = object.data.root_pos_w[:, :3].clone()
+    goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + goal_height_offset
+    distance = torch.norm(goal_pos_w - object.data.root_pos_w[:, :3], dim=1)
+
     if height_offset is not None:
         height_threshold = object.data.default_root_state[:, 2] + height_offset
     else:

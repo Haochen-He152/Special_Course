@@ -76,7 +76,7 @@ class CommandsCfg:
         asset_name="robot",
         body_name=MISSING,  # will be set by agent env cfg
         resampling_time_range=(5.0, 5.0),
-        debug_vis=True,
+        debug_vis=False,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
             pos_x=(0.4, 0.6), pos_y=(-0.25, 0.25), pos_z=(0.25, 0.5), roll=(0.0, 0.0), pitch=(0.0, 0.0), yaw=(0.0, 0.0)
         ),
@@ -103,7 +103,10 @@ class ObservationsCfg:
         joint_pos = ObsTerm(func=mdp.joint_pos_rel)
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
         object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
-        target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
+        target_object_position = ObsTerm(
+            func=mdp.object_goal_position_above_object_in_robot_root_frame,
+            params={"goal_height_offset": 0.20},
+        )
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
@@ -145,7 +148,7 @@ class RewardsCfg:
 
     lifting_object_dense = RewTerm(
         func=mdp.object_lift_height,
-        params={"target_height": 0.12},
+        params={"target_height": 0.20},
         weight=8.0,
     )
 
@@ -153,13 +156,13 @@ class RewardsCfg:
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.3, "height_offset": 0.05, "command_name": "object_pose"},
+        params={"std": 0.3, "height_offset": 0.05, "goal_height_offset": 0.20},
         weight=4.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.05, "height_offset": 0.05, "command_name": "object_pose"},
+        params={"std": 0.05, "height_offset": 0.05, "goal_height_offset": 0.20},
         weight=2.0,
     )
 
@@ -180,7 +183,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
     object_dropping = DoneTerm(
-        func=mdp.root_height_below_minimum, params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")}
+        func=mdp.root_height_below_minimum, params={"minimum_height": -0.2, "asset_cfg": SceneEntityCfg("object")}
     )
 
 
