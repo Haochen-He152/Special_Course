@@ -36,6 +36,9 @@ OBJECT_NAMES = [
     "small_tomato_soup_can",
 ]
 
+YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
+CUBE_OBJECT_NAMES = {"white_cube", "black_cube"}
+
 
 parser = argparse.ArgumentParser(description="Record one video with six envs and six different objects.")
 parser.add_argument("--video-length", type=int, default=180, help="Number of environment steps to record.")
@@ -129,15 +132,13 @@ def _force_one_object_per_env(env) -> None:
     object_state[..., 7:] = 0.0
 
     for env_index in range(len(OBJECT_NAMES)):
+        object_name = OBJECT_NAMES[env_index]
+        initial_rot = (1.0, 0.0, 0.0, 0.0) if object_name in CUBE_OBJECT_NAMES else YAW_90_ROT
         target_state = object_collection.data.default_object_state[env_index, object_ids[env_index]].clone()
         target_state[:3] += env_origins[env_index]
         target_state[0] = env_origins[env_index, 0] + args_cli.object_x
         target_state[1] = env_origins[env_index, 1] + args_cli.object_y
-        target_state[3:7] = torch.tensor(
-            (1.0, 0.0, 0.0, 0.0),
-            dtype=object_state.dtype,
-            device=object_collection.device,
-        )
+        target_state[3:7] = torch.tensor(initial_rot, dtype=object_state.dtype, device=object_collection.device)
         target_state[7:] = 0.0
         object_state[env_index, env_index] = target_state
 
