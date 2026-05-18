@@ -22,9 +22,13 @@ from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 
+YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
+
+
 SINGLE_OBJECTS = {
     "cube": {
         "initial_pos": (0.5, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
         "spawn": UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
             scale=(0.8, 0.8, 0.8),
@@ -40,6 +44,7 @@ SINGLE_OBJECTS = {
     },
     "sugar_box": {
         "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
             scale=(0.701, 0.823, 1.108),
@@ -49,6 +54,7 @@ SINGLE_OBJECTS = {
     },
     "tomato_soup_can": {
         "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
             scale=(1.109, 1.080, 1.108),
@@ -58,6 +64,7 @@ SINGLE_OBJECTS = {
     },
     "mustard_bottle": {
         "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
             scale=(0.625, 1.098, 0.858),
@@ -67,6 +74,7 @@ SINGLE_OBJECTS = {
     },
     "white_cube": {
         "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
             scale=(0.833333, 0.833333, 0.833333),
@@ -83,6 +91,7 @@ SINGLE_OBJECTS = {
     },
     "black_cube": {
         "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
             scale=(0.5, 0.5, 0.5),
@@ -99,6 +108,7 @@ SINGLE_OBJECTS = {
     },
     "small_tomato_soup_can": {
         "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
             scale=(0.739, 0.687, 0.738),
@@ -132,7 +142,7 @@ class FrankaSingleObjectLiftEnvCfg(LiftEnvCfg):
         object_cfg = SINGLE_OBJECTS[self.object_name]
         self.scene.object = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/Object",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=object_cfg["initial_pos"], rot=(1.0, 0.0, 0.0, 0.0)),
+            init_state=RigidObjectCfg.InitialStateCfg(pos=object_cfg["initial_pos"], rot=object_cfg["initial_rot"]),
             spawn=object_cfg["spawn"],
         )
 

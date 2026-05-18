@@ -72,6 +72,21 @@ def target_object_id_one_hot(
     return torch.nn.functional.one_hot(target_choice_ids, num_classes=object.num_objects).to(torch.float32)
 
 
+def target_object_yaw(
+    env: ManagerBasedRLEnv,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """Yaw of the current target object encoded as sin/cos."""
+    object: RigidObjectCollection = env.scene[object_cfg.name]
+    env_ids = torch.arange(env.num_envs, dtype=torch.long, device=object.device)
+    target_object_ids = _get_target_object_ids(env, object)
+    object_quat_w = object.data.object_quat_w[env_ids, target_object_ids]
+
+    qw, qx, qy, qz = object_quat_w.unbind(dim=-1)
+    yaw = torch.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
+    return torch.stack((torch.sin(yaw), torch.cos(yaw)), dim=-1)
+
+
 def target_object_orientation_one_hot(
     env: ManagerBasedRLEnv,
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),

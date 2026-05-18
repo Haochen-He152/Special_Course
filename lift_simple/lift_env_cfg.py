@@ -113,6 +113,7 @@ class ObservationsCfg:
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
         object_position = ObsTerm(func=mdp.target_object_position_in_robot_root_frame)
         target_object_id = ObsTerm(func=mdp.target_object_id_one_hot)
+        target_object_yaw = ObsTerm(func=mdp.target_object_yaw)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
 
@@ -155,10 +156,10 @@ class RewardsCfg:
 
     reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=2.0)
 
-    close_gripper_near_object = RewTerm(
-        func=mdp.gripper_closed_when_near_object,
-        params={"std": 0.08, "open_width": 0.04},
-        weight=1.5,
+    gripper_closed_far_from_object = RewTerm(
+        func=mdp.gripper_closed_far_from_object,
+        params={"far_threshold": 0.2, "open_width": 0.04},
+        weight=-1.5,
     )
 
     lifting_object_dense = RewTerm(

@@ -98,9 +98,9 @@ def object_ee_distance(
     return 1 - torch.tanh(object_ee_distance / std)
 
 
-def gripper_closed_when_near_object(
+def gripper_closed_far_from_object(
     env: ManagerBasedRLEnv,
-    std: float = 0.08,
+    far_threshold: float = 0.2,
     open_width: float = 0.04,
     object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
@@ -108,19 +108,19 @@ def gripper_closed_when_near_object(
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
     finger_joint_names: list[str] = ["panda_finger.*"],
 ) -> torch.Tensor:
-    """Reward closing the gripper only when the end-effector is near the target object."""
+    """Penalize closing the gripper while the end-effector is far from the target object."""
     robot: Articulation = env.scene[robot_cfg.name]
     object: RigidObjectCollection = env.scene[object_cfg.name]
     ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
 
     object_pos_w = _get_object_pos_w(env, object, object_name)
     ee_w = ee_frame.data.target_pos_w[..., 0, :]
-    near_object = 1 - torch.tanh(torch.norm(object_pos_w - ee_w, dim=1) / std)
+    far_from_object = (torch.norm(object_pos_w - ee_w, dim=1) > far_threshold).float()
 
     finger_joint_ids, _ = robot.find_joints(finger_joint_names, preserve_order=True)
     finger_pos = robot.data.joint_pos[:, finger_joint_ids]
     gripper_closed = 1.0 - torch.clamp(finger_pos.mean(dim=1) / open_width, min=0.0, max=1.0)
-    return near_object * gripper_closed
+    return far_from_object * gripper_closed
 
 
 def object_goal_distance(
