@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from isaaclab.assets import Articulation, RigidObject, RigidObjectCollection
+from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import FrameTransformer
 from isaaclab.utils.math import combine_frame_transforms
@@ -18,82 +18,48 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-def _get_object_pos_w(
-    env: ManagerBasedRLEnv,
-    object: RigidObjectCollection,
-    object_name: str = "sugar_box",
-) -> torch.Tensor:
-    """Return the current target object's position from a rigid object collection."""
-    if hasattr(env, "_target_object_ids"):
-        env_ids = torch.arange(env.num_envs, device=object.device)
-        return object.data.object_pos_w[env_ids, env._target_object_ids, :3]
-    object_ids, _ = object.find_objects(object_name, preserve_order=True)
-    return object.data.object_pos_w[:, object_ids[0], :3]
-
-
-def _get_object_default_pos_w(
-    env: ManagerBasedRLEnv,
-    object: RigidObjectCollection,
-    object_name: str = "sugar_box",
-) -> torch.Tensor:
-    """Return the current target object's default position in world frame."""
-    if hasattr(env, "_target_object_ids"):
-        env_ids = torch.arange(env.num_envs, device=object.device)
-        object_pos_w = object.data.default_object_state[env_ids, env._target_object_ids, :3]
-    else:
-        object_ids, _ = object.find_objects(object_name, preserve_order=True)
-        object_pos_w = object.data.default_object_state[:, object_ids[0], :3]
-    return object_pos_w + env.scene.env_origins
-
-
 def object_is_lifted(
     env: ManagerBasedRLEnv,
     minimal_height: float = 0.04,
     height_offset: float | None = None,
-    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Reward the agent for lifting the target object above the minimal height."""
-    object: RigidObjectCollection = env.scene[object_cfg.name]
-    object_pos_w = _get_object_pos_w(env, object, object_name)
+    """Reward the agent for lifting the object above the minimal height."""
+    object: RigidObject = env.scene[object_cfg.name]
     if height_offset is not None:
-        default_object_pos_w = _get_object_default_pos_w(env, object, object_name)
-        height_threshold = default_object_pos_w[:, 2] + height_offset
+        height_threshold = object.data.default_root_state[:, 2] + height_offset
     else:
         height_threshold = minimal_height
-    return torch.where(object_pos_w[:, 2] > height_threshold, 1.0, 0.0)
+    return torch.where(object.data.root_pos_w[:, 2] > height_threshold, 1.0, 0.0)
 
 
 def object_lift_height(
     env: ManagerBasedRLEnv,
     target_height: float = 0.12,
-    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Dense reward for lifting the target object above its reset height."""
-    object: RigidObjectCollection = env.scene[object_cfg.name]
-    object_pos_w = _get_object_pos_w(env, object, object_name)
-    default_object_pos_w = _get_object_default_pos_w(env, object, object_name)
-    return torch.clamp((object_pos_w[:, 2] - default_object_pos_w[:, 2]) / target_height, min=0.0, max=1.0)
+    """Dense reward for lifting the object above its reset height."""
+    object: RigidObject = env.scene[object_cfg.name]
+    object_height = object.data.root_pos_w[:, 2] - object.data.default_root_state[:, 2]
+    return torch.clamp(object_height / target_height, min=0.0, max=1.0)
 
 
 def object_ee_distance(
     env: ManagerBasedRLEnv,
     std: float,
-    object_name: str = "sugar_box",
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
 ) -> torch.Tensor:
-    """Reward the agent for reaching the target object using tanh-kernel."""
+    """Reward the agent for reaching the object using tanh-kernel."""
     # extract the used quantities (to enable type-hinting)
-    object: RigidObjectCollection = env.scene[object_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
     ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
     # Target object position: (num_envs, 3)
-    object_pos_w = _get_object_pos_w(env, object, object_name)
+    cube_pos_w = object.data.root_pos_w
     # End-effector position: (num_envs, 3)
     ee_w = ee_frame.data.target_pos_w[..., 0, :]
     # Distance of the end-effector to the object: (num_envs,)
-    object_ee_distance = torch.norm(object_pos_w - ee_w, dim=1)
+    object_ee_distance = torch.norm(cube_pos_w - ee_w, dim=1)
 
     return 1 - torch.tanh(object_ee_distance / std)
 
@@ -102,18 +68,17 @@ def gripper_closed_when_near_object(
     env: ManagerBasedRLEnv,
     std: float = 0.08,
     open_width: float = 0.04,
-    object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
     finger_joint_names: list[str] = ["panda_finger.*"],
 ) -> torch.Tensor:
-    """Reward closing the gripper only when the end-effector is near the target object."""
+    """Reward closing the gripper only when the end-effector is near the object."""
     robot: Articulation = env.scene[robot_cfg.name]
-    object: RigidObjectCollection = env.scene[object_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
     ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
 
-    object_pos_w = _get_object_pos_w(env, object, object_name)
+    object_pos_w = object.data.root_pos_w[:, :3]
     ee_w = ee_frame.data.target_pos_w[..., 0, :]
     near_object = 1 - torch.tanh(torch.norm(object_pos_w - ee_w, dim=1) / std)
 
@@ -129,25 +94,22 @@ def object_goal_distance(
     command_name: str,
     minimal_height: float = 0.04,
     height_offset: float | None = None,
-    object_name: str = "sugar_box",
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Reward the agent for tracking the target object goal pose using tanh-kernel."""
+    """Reward the agent for tracking the goal pose using tanh-kernel."""
     # extract the used quantities (to enable type-hinting)
     robot: RigidObject = env.scene[robot_cfg.name]
-    object: RigidObjectCollection = env.scene[object_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
     command = env.command_manager.get_command(command_name)
-    object_pos_w = _get_object_pos_w(env, object, object_name)
     # compute the desired position in the world frame
     des_pos_b = command[:, :3]
     des_pos_w, _ = combine_frame_transforms(robot.data.root_pos_w, robot.data.root_quat_w, des_pos_b)
     # distance of the end-effector to the object: (num_envs,)
-    distance = torch.norm(des_pos_w - object_pos_w, dim=1)
+    distance = torch.norm(des_pos_w - object.data.root_pos_w, dim=1)
     # rewarded if the object is lifted above the threshold
     if height_offset is not None:
-        default_object_pos_w = _get_object_default_pos_w(env, object, object_name)
-        height_threshold = default_object_pos_w[:, 2] + height_offset
+        height_threshold = object.data.default_root_state[:, 2] + height_offset
     else:
         height_threshold = minimal_height
-    return (object_pos_w[:, 2] > height_threshold) * (1 - torch.tanh(distance / std))
+    return (object.data.root_pos_w[:, 2] > height_threshold) * (1 - torch.tanh(distance / std))

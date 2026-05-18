@@ -30,7 +30,7 @@ def reset_object_collection_uniform(
     min_separation: float = 0.0,
     max_resample_attempts: int = 50,
     spawn_only_target: bool = False,
-    hidden_position: tuple[float, float, float] = (-10.0, 0.0, 0.5),
+    hidden_position: tuple[float, float, float] = (0.0, 0.0, 200.0),
     orientation_choices: dict[str, list[tuple[float, float, float]]]
     | list[tuple[float, float, float]]
     | None = None,
