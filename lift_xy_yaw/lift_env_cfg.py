@@ -28,6 +28,13 @@ from . import mdp
 # Scene definition
 ##
 
+# These are offsets added to each object's InitialStateCfg position by reset_root_state_uniform.
+XY_RANDOM_OFFSET_RANGES = {
+    "small": {"x": (-0.03, 0.03), "y": (-0.03, 0.03)},
+    "medium": {"x": (-0.10, 0.10), "y": (-0.10, 0.10)},
+    "large": {"x": (-0.30, 0.30), "y": (-0.25, 0.25)},
+}
+
 
 @configclass
 class ObjectTableSceneCfg(InteractiveSceneCfg):
@@ -224,6 +231,8 @@ class CurriculumCfg:
 class LiftEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the lifting environment."""
 
+    xy_random_size = "large"
+
     # Scene settings
     scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=2.5)
     # Basic settings
@@ -245,8 +254,19 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.01  # 100Hz
         self.sim.render_interval = self.decimation
 
+        self._set_xy_random_size(self.xy_random_size)
+
         self.sim.physx.bounce_threshold_velocity = 0.2
         self.sim.physx.bounce_threshold_velocity = 0.01
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
+
+    def _set_xy_random_size(self, size: str):
+        """Apply a named XY reset randomization range to the object reset event."""
+        if size not in XY_RANDOM_OFFSET_RANGES:
+            valid_sizes = ", ".join(sorted(XY_RANDOM_OFFSET_RANGES))
+            raise ValueError(f"Unknown xy_random_size '{size}'. Valid sizes: {valid_sizes}.")
+
+        pose_range = self.events.reset_object_position.params["pose_range"]
+        pose_range.update(XY_RANDOM_OFFSET_RANGES[size])

@@ -169,6 +169,21 @@ class FrankaCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
 
 
 @configclass
+class FrankaCubeSmallRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    xy_random_size = "small"
+
+
+@configclass
+class FrankaCubeMediumRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    xy_random_size = "medium"
+
+
+@configclass
+class FrankaCubeLargeRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    xy_random_size = "large"
+
+
+@configclass
 class FrankaSugarBoxLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
     object_name = "sugar_box"
 
@@ -210,6 +225,33 @@ class FrankaSingleObjectLiftEnvCfg_PLAY(FrankaSingleObjectLiftEnvCfg):
 @configclass
 class FrankaCubeLiftEnvCfg_PLAY(FrankaSingleObjectLiftEnvCfg_PLAY):
     object_name = "cube"
+
+
+@configclass
+class FrankaCubeSmallRandomLiftEnvCfg_PLAY(FrankaCubeSmallRandomLiftEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
+
+
+@configclass
+class FrankaCubeMediumRandomLiftEnvCfg_PLAY(FrankaCubeMediumRandomLiftEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
+
+
+@configclass
+class FrankaCubeLargeRandomLiftEnvCfg_PLAY(FrankaCubeLargeRandomLiftEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
 
 
 @configclass

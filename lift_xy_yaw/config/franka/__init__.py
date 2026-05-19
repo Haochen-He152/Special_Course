@@ -10,6 +10,9 @@ from . import agents
 
 _SINGLE_OBJECT_TASKS = {
     "Cube": "FrankaCubeLiftEnvCfg",
+    "CubeSmallRandom": "FrankaCubeSmallRandomLiftEnvCfg",
+    "CubeMediumRandom": "FrankaCubeMediumRandomLiftEnvCfg",
+    "CubeLargeRandom": "FrankaCubeLargeRandomLiftEnvCfg",
     "SugarBox": "FrankaSugarBoxLiftEnvCfg",
     "TomatoSoupCan": "FrankaTomatoSoupCanLiftEnvCfg",
     "MustardBottle": "FrankaMustardBottleLiftEnvCfg",
