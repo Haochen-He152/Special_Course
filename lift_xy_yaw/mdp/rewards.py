@@ -93,6 +93,35 @@ def gripper_closed_when_near_object(
     return near_object * gripper_closed
 
 
+def object_between_fingers_and_gripper_closed(
+    env: ManagerBasedRLEnv,
+    near_threshold: float = 0.20,
+    balance_std: float = 0.02,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    finger_body_names: list[str] = ["panda_leftfinger", "panda_rightfinger"],
+) -> torch.Tensor:
+    """Reward balanced finger-object distances near the object."""
+    robot: Articulation = env.scene[robot_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
+
+    finger_body_ids, _ = robot.find_bodies(finger_body_names, preserve_order=True)
+    finger_pos_w = robot.data.body_pos_w[:, finger_body_ids, :]
+    left_finger_pos_w = finger_pos_w[:, 0, :]
+    right_finger_pos_w = finger_pos_w[:, 1, :]
+
+    object_pos_w = object.data.root_pos_w[:, :3]
+    finger_midpoint_w = 0.5 * (left_finger_pos_w + right_finger_pos_w)
+    near_fingers = (torch.norm(object_pos_w - finger_midpoint_w, dim=1) < near_threshold).float()
+
+    left_distance = torch.norm(object_pos_w - left_finger_pos_w, dim=1)
+    right_distance = torch.norm(object_pos_w - right_finger_pos_w, dim=1)
+    distance_balance = torch.abs(left_distance - right_distance)
+    centered_between_fingers = 1.0 - torch.tanh(distance_balance / balance_std)
+
+    return near_fingers * centered_between_fingers
+
+
 def ee_object_yaw_alignment(
     env: ManagerBasedRLEnv,
     near_threshold: float = 0.18,

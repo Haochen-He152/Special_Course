@@ -159,6 +159,12 @@ class RewardsCfg:
         weight=1.5,
     )
 
+    object_between_fingers = RewTerm(
+        func=mdp.object_between_fingers_and_gripper_closed,
+        params={"near_threshold": 0.20, "balance_std": 0.02},
+        weight=4.0,
+    )
+
     ee_object_yaw_alignment = RewTerm(
         func=mdp.ee_object_yaw_alignment,
         params={"near_threshold": 0.18, "std": 0.12},
