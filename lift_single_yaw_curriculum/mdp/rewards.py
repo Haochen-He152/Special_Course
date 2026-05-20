@@ -117,6 +117,27 @@ def gripper_closed_when_far_from_object(
     return far_from_object * gripper_closed
 
 
+def gripper_open_after_object_moves(
+    env: ManagerBasedRLEnv,
+    moved_height_threshold: float = 0.015,
+    open_width: float = 0.04,
+    open_threshold: float = 0.03,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    finger_joint_names: list[str] = ["panda_finger.*"],
+) -> torch.Tensor:
+    """Penalize opening the gripper after the object has moved upward from its reset height."""
+    robot: Articulation = env.scene[robot_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
+
+    object_lifted = (object.data.root_pos_w[:, 2] - object.data.default_root_state[:, 2]) > moved_height_threshold
+
+    finger_joint_ids, _ = robot.find_joints(finger_joint_names, preserve_order=True)
+    finger_pos = robot.data.joint_pos[:, finger_joint_ids]
+    gripper_open = (finger_pos.mean(dim=1) > open_threshold).float()
+    return object_lifted.float() * gripper_open
+
+
 def object_between_fingers_and_gripper_closed(
     env: ManagerBasedRLEnv,
     near_threshold: float = 0.20,

@@ -45,6 +45,7 @@ For `CubeFixed`, the curriculum changes these reward weights at `num_steps=25000
 - `joint_vel`: `-1e-4` to `-1e-1`
 
 The gripper-close shaping only penalizes closing while far from the object; it does not reward closing near the object.
+After the object moves upward by more than `0.015 m`, opening the gripper is penalized to discourage dropping.
 
 ## Reset ranges
 
