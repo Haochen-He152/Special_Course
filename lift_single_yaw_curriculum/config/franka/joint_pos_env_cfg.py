@@ -1,0 +1,364 @@
+# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+import isaaclab.sim as sim_utils
+from isaaclab.assets import RigidObjectCfg
+from isaaclab.sensors import FrameTransformerCfg
+from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
+from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
+from isaaclab.utils import configclass
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+
+from ... import mdp
+from ...lift_env_cfg import LiftEnvCfg
+
+##
+# Pre-defined configs
+##
+from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
+from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
+
+
+YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
+
+
+SINGLE_OBJECTS = {
+    "cube": {
+        "initial_pos": (0.5, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
+        "spawn": UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.8, 0.8, 0.8),
+            rigid_props=RigidBodyPropertiesCfg(
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=1,
+                max_angular_velocity=1000.0,
+                max_linear_velocity=1000.0,
+                max_depenetration_velocity=5.0,
+                disable_gravity=False,
+            ),
+        ),
+    },
+    "sugar_box": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
+            scale=(0.701, 0.823, 1.108),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
+        ),
+    },
+    "tomato_soup_can": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+            scale=(1.109, 1.080, 1.108),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.4),
+        ),
+    },
+    "mustard_bottle": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+            scale=(0.625, 1.098, 0.858),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
+        ),
+    },
+    "white_cube": {
+        "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.833333, 0.833333, 0.833333),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=1,
+                max_angular_velocity=1000.0,
+                max_linear_velocity=1000.0,
+                max_depenetration_velocity=5.0,
+                disable_gravity=False,
+            ),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 1.0)),
+        ),
+    },
+    "black_cube": {
+        "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.5, 0.5, 0.5),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=1,
+                max_angular_velocity=1000.0,
+                max_linear_velocity=1000.0,
+                max_depenetration_velocity=5.0,
+                disable_gravity=False,
+            ),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),
+        ),
+    },
+    "small_tomato_soup_can": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+            scale=(0.739, 0.687, 0.738),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.14),
+        ),
+    },
+}
+
+
+@configclass
+class FrankaSingleObjectLiftEnvCfg(LiftEnvCfg):
+    object_name = "cube"
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        self.scene.robot = FRANKA_PANDA_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+        self.actions.arm_action = mdp.JointPositionActionCfg(
+            asset_name="robot", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
+        )
+        self.actions.gripper_action = mdp.BinaryJointPositionActionCfg(
+            asset_name="robot",
+            joint_names=["panda_finger.*"],
+            open_command_expr={"panda_finger_.*": 0.04},
+            close_command_expr={"panda_finger_.*": 0.0},
+        )
+        self.commands.object_pose.body_name = "panda_hand"
+
+        object_cfg = SINGLE_OBJECTS[self.object_name]
+        self.scene.object = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/Object",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=object_cfg["initial_pos"], rot=object_cfg["initial_rot"]),
+            spawn=object_cfg["spawn"],
+        )
+
+        marker_cfg = FRAME_MARKER_CFG.copy()
+        marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
+        marker_cfg.prim_path = "/Visuals/FrameTransformer"
+        self.scene.ee_frame = FrameTransformerCfg(
+            prim_path="{ENV_REGEX_NS}/Robot/panda_link0",
+            debug_vis=False,
+            visualizer_cfg=marker_cfg,
+            target_frames=[
+                FrameTransformerCfg.FrameCfg(
+                    prim_path="{ENV_REGEX_NS}/Robot/panda_hand",
+                    name="end_effector",
+                    offset=OffsetCfg(pos=[0.0, 0.0, 0.1034]),
+                ),
+            ],
+        )
+
+
+@configclass
+class FrankaCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "cube"
+
+
+@configclass
+class FrankaCubeFixedLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    xy_random_size = "fixed"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaCubeRandomXYLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaCubeRandomXYYawLiftEnvCfg(FrankaCubeRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaSugarBoxLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "sugar_box"
+
+
+@configclass
+class FrankaTomatoSoupCanLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "tomato_soup_can"
+
+
+@configclass
+class FrankaMustardBottleLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "mustard_bottle"
+
+
+@configclass
+class FrankaWhiteCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "white_cube"
+
+
+@configclass
+class FrankaBlackCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "black_cube"
+
+
+@configclass
+class FrankaSmallTomatoSoupCanLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
+    object_name = "small_tomato_soup_can"
+
+
+@configclass
+class FrankaSugarBoxRandomXYLiftEnvCfg(FrankaSugarBoxLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaTomatoSoupCanRandomXYLiftEnvCfg(FrankaTomatoSoupCanLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaMustardBottleRandomXYLiftEnvCfg(FrankaMustardBottleLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaWhiteCubeRandomXYLiftEnvCfg(FrankaWhiteCubeLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaBlackCubeRandomXYLiftEnvCfg(FrankaBlackCubeLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaSmallTomatoSoupCanRandomXYLiftEnvCfg(FrankaSmallTomatoSoupCanLiftEnvCfg):
+    xy_random_size = "single"
+    yaw_random_size = "fixed"
+
+
+@configclass
+class FrankaSugarBoxRandomXYYawLiftEnvCfg(FrankaSugarBoxRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaTomatoSoupCanRandomXYYawLiftEnvCfg(FrankaTomatoSoupCanRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaMustardBottleRandomXYYawLiftEnvCfg(FrankaMustardBottleRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaWhiteCubeRandomXYYawLiftEnvCfg(FrankaWhiteCubeRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaBlackCubeRandomXYYawLiftEnvCfg(FrankaBlackCubeRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+@configclass
+class FrankaSmallTomatoSoupCanRandomXYYawLiftEnvCfg(FrankaSmallTomatoSoupCanRandomXYLiftEnvCfg):
+    yaw_random_size = "full"
+
+
+class _PlayMixin:
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
+
+
+@configclass
+class FrankaCubeFixedLiftEnvCfg_PLAY(_PlayMixin, FrankaCubeFixedLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaCubeRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaCubeRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaCubeRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaCubeRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaSugarBoxRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaSugarBoxRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaTomatoSoupCanRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaTomatoSoupCanRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaMustardBottleRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaMustardBottleRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaWhiteCubeRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaWhiteCubeRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaBlackCubeRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaBlackCubeRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaSmallTomatoSoupCanRandomXYLiftEnvCfg_PLAY(_PlayMixin, FrankaSmallTomatoSoupCanRandomXYLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaSugarBoxRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaSugarBoxRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaTomatoSoupCanRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaTomatoSoupCanRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaMustardBottleRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaMustardBottleRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaWhiteCubeRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaWhiteCubeRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaBlackCubeRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaBlackCubeRandomXYYawLiftEnvCfg):
+    pass
+
+
+@configclass
+class FrankaSmallTomatoSoupCanRandomXYYawLiftEnvCfg_PLAY(_PlayMixin, FrankaSmallTomatoSoupCanRandomXYYawLiftEnvCfg):
+    pass
