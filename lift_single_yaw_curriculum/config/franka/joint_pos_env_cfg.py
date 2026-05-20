@@ -13,7 +13,7 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 from ... import mdp
-from ...lift_env_cfg import LiftEnvCfg
+from ...lift_env_cfg import LiftEnvCfg, SmoothnessPenaltyCurriculumCfg
 
 ##
 # Pre-defined configs
@@ -172,6 +172,7 @@ class FrankaCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
 class FrankaCubeFixedLiftEnvCfg(FrankaCubeLiftEnvCfg):
     xy_random_size = "fixed"
     yaw_random_size = "fixed"
+    curriculum: SmoothnessPenaltyCurriculumCfg = SmoothnessPenaltyCurriculumCfg()
 
 
 @configclass

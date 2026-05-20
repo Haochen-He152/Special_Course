@@ -45,7 +45,7 @@ params:
   load_path: '' # path to the checkpoint to load
 
   config:
-    name: franka_lift_single
+    name: franka_lift_single_yaw_curriculum
     env_name: rlgpu
     device: 'cuda:0'
     device_name: 'cuda:0'

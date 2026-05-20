@@ -13,7 +13,7 @@ class LiftCubePPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 32
     max_iterations = 6000
     save_interval = 50
-    experiment_name = "franka_lift_single"
+    experiment_name = "franka_lift_single_yaw_curriculum"
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
         actor_obs_normalization=False,

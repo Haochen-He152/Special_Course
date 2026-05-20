@@ -7,6 +7,7 @@ Single-object lift tasks with object yaw added to the policy observation. The ya
 
 1. Fixed cube position and fixed yaw:
    `Isaac-Lift-Single-Yaw-Curriculum-CubeFixed-Franka-v0`
+   This task uses `skrl_cube_fixed_ppo_cfg.yaml` and enables the official lift-style smoothness curriculum at 10k steps.
 
 2. Random cube XY position, fixed yaw:
    `Isaac-Lift-Single-Yaw-Curriculum-CubeRandomXY-Franka-v0`
@@ -29,6 +30,18 @@ Single-object lift tasks with object yaw added to the policy observation. The ya
    - `Isaac-Lift-Single-Yaw-Curriculum-SmallTomatoSoupCanRandomXYYaw-Franka-v0`
 
 Each task also has a `-Play-v0` variant.
+
+## SKRL logs and training length
+
+- Generic SKRL config: `config/franka/agents/skrl_ppo_cfg.yaml`
+- Fixed cube SKRL config: `config/franka/agents/skrl_cube_fixed_ppo_cfg.yaml`
+- Logs: `lift_single_yaw_curriculum/logs/skrl`
+- Trainer timesteps: `36000`
+
+For `CubeFixed`, the curriculum changes these reward weights at `num_steps=10000`:
+
+- `action_rate`: `-1e-4` to `-1e-1`
+- `joint_vel`: `-1e-4` to `-1e-1`
 
 ## Reset ranges
 
