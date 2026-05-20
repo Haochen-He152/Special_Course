@@ -36,9 +36,10 @@ Each task also has a `-Play-v0` variant.
 - Generic SKRL config: `config/franka/agents/skrl_ppo_cfg.yaml`
 - Fixed cube SKRL config: `config/franka/agents/skrl_cube_fixed_ppo_cfg.yaml`
 - Logs: `lift_single_yaw_curriculum/logs/skrl`
-- Trainer timesteps: `36000`
+- Generic trainer timesteps: `36000`
+- Fixed cube trainer timesteps: `50000`
 
-For `CubeFixed`, the curriculum changes these reward weights at `num_steps=10000`:
+For `CubeFixed`, the curriculum changes these reward weights at `num_steps=14000`:
 
 - `action_rate`: `-1e-4` to `-1e-1`
 - `joint_vel`: `-1e-4` to `-1e-1`
