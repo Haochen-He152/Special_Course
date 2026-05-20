@@ -44,6 +44,8 @@ For `CubeFixed`, the curriculum changes these reward weights at `num_steps=25000
 - `action_rate`: `-1e-4` to `-1e-1`
 - `joint_vel`: `-1e-4` to `-1e-1`
 
+The gripper-close shaping only penalizes closing while far from the object; it does not reward closing near the object.
+
 ## Reset ranges
 
 - `fixed`: `x = 0`, `y = 0`, `yaw = 0` offset from the object's initial pose.

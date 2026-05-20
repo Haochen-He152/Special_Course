@@ -93,6 +93,30 @@ def gripper_closed_when_near_object(
     return near_object * gripper_closed
 
 
+def gripper_closed_when_far_from_object(
+    env: ManagerBasedRLEnv,
+    near_threshold: float = 0.12,
+    open_width: float = 0.04,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
+    finger_joint_names: list[str] = ["panda_finger.*"],
+) -> torch.Tensor:
+    """Penalize closing the gripper before the end-effector is near the object."""
+    robot: Articulation = env.scene[robot_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
+    ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
+
+    object_pos_w = object.data.root_pos_w[:, :3]
+    ee_w = ee_frame.data.target_pos_w[..., 0, :]
+    far_from_object = (torch.norm(object_pos_w - ee_w, dim=1) > near_threshold).float()
+
+    finger_joint_ids, _ = robot.find_joints(finger_joint_names, preserve_order=True)
+    finger_pos = robot.data.joint_pos[:, finger_joint_ids]
+    gripper_closed = 1.0 - torch.clamp(finger_pos.mean(dim=1) / open_width, min=0.0, max=1.0)
+    return far_from_object * gripper_closed
+
+
 def object_between_fingers_and_gripper_closed(
     env: ManagerBasedRLEnv,
     near_threshold: float = 0.20,

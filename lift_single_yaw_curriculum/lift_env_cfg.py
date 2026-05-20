@@ -158,10 +158,10 @@ class RewardsCfg:
 
     reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=1.0)
 
-    close_gripper_near_object = RewTerm(
-        func=mdp.gripper_closed_when_near_object,
-        params={"std": 0.08, "open_width": 0.04},
-        weight=4.0,
+    close_gripper_far_from_object = RewTerm(
+        func=mdp.gripper_closed_when_far_from_object,
+        params={"near_threshold": 0.20, "open_width": 0.04},
+        weight=-2.0,
     )
 
     object_between_fingers = RewTerm(
