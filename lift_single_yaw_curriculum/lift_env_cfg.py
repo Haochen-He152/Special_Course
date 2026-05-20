@@ -156,12 +156,12 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=2.0)
+    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=1.0)
 
     close_gripper_near_object = RewTerm(
         func=mdp.gripper_closed_when_near_object,
         params={"std": 0.08, "open_width": 0.04},
-        weight=1.5,
+        weight=4.0,
     )
 
     object_between_fingers = RewTerm(
@@ -179,10 +179,10 @@ class RewardsCfg:
     lifting_object_dense = RewTerm(
         func=mdp.object_lift_height,
         params={"target_height": 0.20},
-        weight=8.0,
+        weight=10.0,
     )
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=8.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=12.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
@@ -227,11 +227,11 @@ class SmoothnessPenaltyCurriculumCfg(CurriculumCfg):
     """Increase smoothness penalties after the fixed-cube policy starts lifting reliably."""
 
     action_rate = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "action_rate", "weight": -1e-1, "num_steps": 14000}
+        func=mdp.modify_reward_weight, params={"term_name": "action_rate", "weight": -1e-1, "num_steps": 25000}
     )
 
     joint_vel = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "joint_vel", "weight": -1e-1, "num_steps": 14000}
+        func=mdp.modify_reward_weight, params={"term_name": "joint_vel", "weight": -1e-1, "num_steps": 25000}
     )
 
 
