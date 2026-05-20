@@ -37,15 +37,14 @@ Each task also has a `-Play-v0` variant.
 - Fixed cube SKRL config: `config/franka/agents/skrl_cube_fixed_ppo_cfg.yaml`
 - Logs: `lift_single_yaw_curriculum/logs/skrl`
 - Generic trainer timesteps: `36000`
-- Fixed cube trainer timesteps: `50000`
+- Fixed cube trainer timesteps: `36000`
 
 For `CubeFixed`, the curriculum changes these reward weights at `num_steps=25000`:
 
 - `action_rate`: `-1e-4` to `-1e-1`
 - `joint_vel`: `-1e-4` to `-1e-1`
 
-The gripper-close shaping only penalizes closing while far from the object; it does not reward closing near the object.
-After the object moves upward by more than `0.015 m`, opening the gripper is penalized to discourage dropping.
+The fixed-cube stage uses a lift-style sparse reward structure without extra gripper or yaw-alignment shaping.
 
 ## Reset ranges
 

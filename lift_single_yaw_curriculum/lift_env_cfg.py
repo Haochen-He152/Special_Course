@@ -158,48 +158,18 @@ class RewardsCfg:
 
     reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=1.0)
 
-    close_gripper_far_from_object = RewTerm(
-        func=mdp.gripper_closed_when_far_from_object,
-        params={"near_threshold": 0.20, "open_width": 0.04},
-        weight=-2.0,
-    )
-
-    object_between_fingers = RewTerm(
-        func=mdp.object_between_fingers_and_gripper_closed,
-        params={"near_threshold": 0.20, "balance_std": 0.02},
-        weight=5.0,
-    )
-
-    gripper_open_after_object_moves = RewTerm(
-        func=mdp.gripper_open_after_object_moves,
-        params={"moved_height_threshold": 0.015, "open_width": 0.04, "open_threshold": 0.03},
-        weight=-8.0,
-    )
-
-    ee_object_yaw_alignment = RewTerm(
-        func=mdp.ee_object_yaw_alignment,
-        params={"near_threshold": 0.18, "std": 0.12},
-        weight=2.0,
-    )
-
-    lifting_object_dense = RewTerm(
-        func=mdp.object_lift_height,
-        params={"target_height": 0.20},
-        weight=14.0,
-    )
-
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=18.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=15.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.3, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=20.0,
+        weight=16.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.05, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=7.0,
+        weight=5.0,
     )
 
     # action penalty
