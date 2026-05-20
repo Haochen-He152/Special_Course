@@ -179,21 +179,21 @@ class RewardsCfg:
     lifting_object_dense = RewTerm(
         func=mdp.object_lift_height,
         params={"target_height": 0.20},
-        weight=10.0,
+        weight=12.0,
     )
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=12.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=15.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.3, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=4.0,
+        weight=16.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.05, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=2.0,
+        weight=5.0,
     )
 
     # action penalty
