@@ -167,8 +167,8 @@ def object_goal_distance(
     """Reward the object for staying close to the goal above its initial x/y position."""
     object: RigidObject = env.scene[object_cfg.name]
 
-    goal_pos_w = object.data.default_root_state[:, :3].clone()
-    goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + goal_height_offset
+    goal_pos_w = object.data.default_root_state[:, :3].clone() + env.scene.env_origins
+    goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + env.scene.env_origins[:, 2] + goal_height_offset
     distance = torch.norm(goal_pos_w - object.data.root_pos_w[:, :3], dim=1)
 
     if height_offset is not None:

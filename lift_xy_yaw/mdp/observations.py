@@ -47,15 +47,15 @@ def object_goal_pose_above_object_in_robot_root_frame(
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Goal pose above the object in the robot's root frame.
+    """Goal pose above the object's initial x/y position in the robot's root frame.
 
-    The goal follows the object's current x/y position and uses the object's default z plus an offset.
+    The goal uses the object's reset/default x/y position and default z plus an offset.
     The orientation is fixed to the identity quaternion to match the official generated command dimension.
     """
     robot: RigidObject = env.scene[robot_cfg.name]
     object: RigidObject = env.scene[object_cfg.name]
-    goal_pos_w = object.data.root_pos_w[:, :3].clone()
-    goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + goal_height_offset
+    goal_pos_w = object.data.default_root_state[:, :3].clone() + env.scene.env_origins
+    goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + env.scene.env_origins[:, 2] + goal_height_offset
     goal_pos_b, _ = subtract_frame_transforms(robot.data.root_pos_w, robot.data.root_quat_w, goal_pos_w)
     goal_quat_b = torch.zeros(env.num_envs, 4, dtype=goal_pos_b.dtype, device=goal_pos_b.device)
     goal_quat_b[:, 0] = 1.0
