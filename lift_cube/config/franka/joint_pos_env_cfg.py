@@ -79,6 +79,8 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
                 ),
             ],
         )
+        self.curriculum.action_rate = None
+        self.curriculum.joint_vel = None
 
 
 @configclass
@@ -98,8 +100,6 @@ class FrankaCubeFixedPosRandomYawLiftEnvCfg(FrankaCubeLiftEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.set_object_reset_randomization(randomize_yaw=True)
-        self.curriculum.action_rate = None
-        self.curriculum.joint_vel = None
 
 
 @configclass
@@ -107,8 +107,6 @@ class FrankaCubeRandomPosRandomYawLiftEnvCfg(FrankaCubeLiftEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.set_object_reset_randomization(randomize_xy=True, randomize_yaw=True)
-        self.curriculum.action_rate = None
-        self.curriculum.joint_vel = None
 
 
 @configclass
