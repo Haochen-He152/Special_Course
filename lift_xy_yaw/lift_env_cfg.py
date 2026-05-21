@@ -9,6 +9,7 @@ from dataclasses import MISSING
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, DeformableObjectCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -114,7 +115,7 @@ class ObservationsCfg:
         object_yaw = ObsTerm(func=mdp.object_yaw_sin_cos)
         target_object_position = ObsTerm(
             func=mdp.object_goal_pose_above_object_in_robot_root_frame,
-            params={"goal_height_offset": 0.20},
+            params={"goal_height_offset": 0.12},
         )
         actions = ObsTerm(func=mdp.last_action)
 
@@ -176,22 +177,22 @@ class RewardsCfg:
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.15, "minimal_height": 0.04, "goal_height_offset": 0.20},
+        params={"std": 0.15, "minimal_height": 0.04, "goal_height_offset": 0.12},
         weight=16.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.05, "minimal_height": 0.04, "goal_height_offset": 0.20},
+        params={"std": 0.05, "minimal_height": 0.04, "goal_height_offset": 0.12},
         weight=5.0,
     )
 
     # action penalty
-    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-1e-4)
+    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-5e-3)
 
     joint_vel = RewTerm(
         func=mdp.joint_vel_l2,
-        weight=-1e-4,
+        weight=-5e-3,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
@@ -210,6 +211,16 @@ class TerminationsCfg:
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
+
+    action_rate = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_rate", "weight": -5e-2, "num_steps": 15000},
+    )
+
+    joint_vel = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "joint_vel", "weight": -5e-2, "num_steps": 15000},
+    )
 
 
 ##
