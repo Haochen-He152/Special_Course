@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
@@ -19,6 +20,86 @@ from ...lift_env_cfg import LiftEnvCfg
 ##
 from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
+
+
+YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
+
+GROCERY_OBJECTS = {
+    "sugar_box": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
+            scale=(0.701, 0.823, 1.108),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
+        ),
+    },
+    "tomato_soup_can": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+            scale=(1.109, 1.080, 1.108),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.4),
+        ),
+    },
+    "mustard_bottle": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+            scale=(0.625, 1.098, 0.858),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.5),
+        ),
+    },
+    "white_cube": {
+        "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.833333, 0.833333, 0.833333),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=1,
+                max_angular_velocity=1000.0,
+                max_linear_velocity=1000.0,
+                max_depenetration_velocity=5.0,
+                disable_gravity=False,
+            ),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 1.0)),
+        ),
+    },
+    "black_cube": {
+        "initial_pos": (0.45, 0.0, 0.055),
+        "initial_rot": (1.0, 0.0, 0.0, 0.0),
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+            scale=(0.5, 0.5, 0.5),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=1,
+                max_angular_velocity=1000.0,
+                max_linear_velocity=1000.0,
+                max_depenetration_velocity=5.0,
+                disable_gravity=False,
+            ),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),
+        ),
+    },
+    "small_tomato_soup_can": {
+        "initial_pos": (0.45, 0.0, 0.10),
+        "initial_rot": YAW_90_ROT,
+        "spawn": sim_utils.UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+            scale=(0.739, 0.687, 0.738),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(solver_position_iteration_count=4),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.14),
+        ),
+    },
+}
 
 
 @configclass
@@ -105,6 +186,51 @@ class FrankaCubeLargeRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
                 "y": (-0.25, 0.25),
             }
         )
+
+
+@configclass
+class FrankaGroceryLargeRandomLiftEnvCfg(FrankaCubeLargeRandomLiftEnvCfg):
+    object_name = "sugar_box"
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        object_cfg = GROCERY_OBJECTS[self.object_name]
+        self.scene.object = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/Object",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=object_cfg["initial_pos"], rot=object_cfg["initial_rot"]),
+            spawn=object_cfg["spawn"],
+        )
+
+
+@configclass
+class FrankaSugarBoxLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "sugar_box"
+
+
+@configclass
+class FrankaTomatoSoupCanLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "tomato_soup_can"
+
+
+@configclass
+class FrankaMustardBottleLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "mustard_bottle"
+
+
+@configclass
+class FrankaWhiteCubeLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "white_cube"
+
+
+@configclass
+class FrankaBlackCubeLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "black_cube"
+
+
+@configclass
+class FrankaSmallTomatoSoupCanLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "small_tomato_soup_can"
 
 
 @configclass
