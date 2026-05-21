@@ -122,6 +122,26 @@ def object_between_fingers_and_gripper_closed(
     return near_fingers * centered_between_fingers
 
 
+def gripper_open_when_object_lifted(
+    env: ManagerBasedRLEnv,
+    height_offset: float = 0.03,
+    open_width: float = 0.04,
+    open_threshold: float = 0.01,
+    robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    finger_joint_names: list[str] = ["panda_finger.*"],
+) -> torch.Tensor:
+    """Penalty signal for opening the gripper after the object has been lifted."""
+    robot: Articulation = env.scene[robot_cfg.name]
+    object: RigidObject = env.scene[object_cfg.name]
+
+    object_lifted = (object.data.root_pos_w[:, 2] > object.data.default_root_state[:, 2] + height_offset).float()
+    finger_joint_ids, _ = robot.find_joints(finger_joint_names, preserve_order=True)
+    finger_pos = robot.data.joint_pos[:, finger_joint_ids]
+    gripper_open = (finger_pos.mean(dim=1) > open_threshold).float()
+    return object_lifted * gripper_open
+
+
 def ee_object_yaw_alignment(
     env: ManagerBasedRLEnv,
     near_threshold: float = 0.18,

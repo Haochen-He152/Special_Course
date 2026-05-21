@@ -166,13 +166,13 @@ class RewardsCfg:
         weight=0.5,
     )
 
-    lifting_object_dense = RewTerm(
-        func=mdp.object_lift_height,
-        params={"target_height": 0.20},
-        weight=12.0,
-    )
-
     lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=14.0)
+
+    gripper_open_when_lifted = RewTerm(
+        func=mdp.gripper_open_when_object_lifted,
+        params={"height_offset": 0.03, "open_threshold": 0.01},
+        weight=-8.0,
+    )
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
