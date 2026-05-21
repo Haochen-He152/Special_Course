@@ -126,6 +126,7 @@ def ee_object_yaw_alignment(
     env: ManagerBasedRLEnv,
     near_threshold: float = 0.18,
     std: float = 0.12,
+    height_offset: float | None = None,
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
 ) -> torch.Tensor:
@@ -147,6 +148,11 @@ def ee_object_yaw_alignment(
     ee_yaw = _yaw_from_quat_wxyz(ee_frame.data.target_quat_w[..., 0, :])
     yaw_error = ee_yaw - object_yaw
     alignment_reward = 0.5 * (torch.cos(2.0 * yaw_error) + 1.0)
+
+    if height_offset is not None:
+        object_lifted = (object.data.root_pos_w[:, 2] > object.data.default_root_state[:, 2] + height_offset).float()
+        alignment_reward = alignment_reward * (1.0 - object_lifted)
+
     return near_object * proximity_reward * alignment_reward
 
 
@@ -158,10 +164,10 @@ def object_goal_distance(
     height_offset: float | None = None,
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ) -> torch.Tensor:
-    """Reward the object for staying close to the goal above its current x/y position."""
+    """Reward the object for staying close to the goal above its initial x/y position."""
     object: RigidObject = env.scene[object_cfg.name]
 
-    goal_pos_w = object.data.root_pos_w[:, :3].clone()
+    goal_pos_w = object.data.default_root_state[:, :3].clone()
     goal_pos_w[:, 2] = object.data.default_root_state[:, 2] + goal_height_offset
     distance = torch.norm(goal_pos_w - object.data.root_pos_w[:, :3], dim=1)
 
