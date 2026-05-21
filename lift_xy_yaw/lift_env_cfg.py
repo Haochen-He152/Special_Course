@@ -157,28 +157,28 @@ class RewardsCfg:
     close_gripper_near_object = RewTerm(
         func=mdp.gripper_closed_when_near_object,
         params={"std": 0.08, "open_width": 0.04},
-        weight=1.5,
+        weight=0.5,
     )
 
     object_between_fingers = RewTerm(
         func=mdp.object_between_fingers_and_gripper_closed,
         params={"near_threshold": 0.20, "balance_std": 0.02},
-        weight=4.0,
+        weight=1.0,
     )
 
     ee_object_yaw_alignment = RewTerm(
         func=mdp.ee_object_yaw_alignment,
         params={"near_threshold": 0.18, "std": 0.12},
-        weight=2.0,
+        weight=0.5,
     )
 
     lifting_object_dense = RewTerm(
         func=mdp.object_lift_height,
         params={"target_height": 0.20},
-        weight=8.0,
+        weight=12.0,
     )
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=25.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
