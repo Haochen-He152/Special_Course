@@ -82,6 +82,32 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
 
 
 @configclass
+class FrankaCubeSmallRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+
+        self.events.reset_object_position.params["pose_range"].update(
+            {
+                "x": (-0.08, 0.08),
+                "y": (-0.13, 0.13),
+            }
+        )
+
+
+@configclass
+class FrankaCubeLargeRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+
+        self.events.reset_object_position.params["pose_range"].update(
+            {
+                "x": (-0.2, 0.2),
+                "y": (-0.25, 0.25),
+            }
+        )
+
+
+@configclass
 class FrankaCubeLiftEnvCfg_PLAY(FrankaCubeLiftEnvCfg):
     def __post_init__(self):
         # post init of parent
