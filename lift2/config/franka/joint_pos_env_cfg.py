@@ -234,6 +234,20 @@ class FrankaBlackCubeLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
 
 
 @configclass
+class FrankaBlackCubeSmallRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
+    object_name = "black_cube"
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.events.reset_object_position.params["pose_range"].update(
+            {
+                "x": (-0.08, 0.08),
+                "y": (-0.13, 0.13),
+            }
+        )
+
+
+@configclass
 class FrankaSmallTomatoSoupCanLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
     object_name = "small_tomato_soup_can"
 

@@ -59,6 +59,7 @@ _GROCERY_LARGE_RANDOM_TASKS = {
     "MustardBottleLargeRandom": "FrankaMustardBottleLargeRandomLiftEnvCfg",
     "WhiteCubeLargeRandom": "FrankaWhiteCubeLargeRandomLiftEnvCfg",
     "BlackCubeLargeRandom": "FrankaBlackCubeLargeRandomLiftEnvCfg",
+    "BlackCubeSmallRandom": "FrankaBlackCubeSmallRandomLiftEnvCfg",
     "SmallTomatoSoupCanLargeRandom": "FrankaSmallTomatoSoupCanLargeRandomLiftEnvCfg",
 }
 
