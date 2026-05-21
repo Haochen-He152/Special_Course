@@ -166,21 +166,22 @@ class FrankaSingleObjectLiftEnvCfg(LiftEnvCfg):
 @configclass
 class FrankaCubeLiftEnvCfg(FrankaSingleObjectLiftEnvCfg):
     object_name = "cube"
+    xy_random_size: str = "fixed"
 
 
 @configclass
 class FrankaCubeSmallRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
-    xy_random_size = "small"
+    xy_random_size: str = "small"
 
 
 @configclass
 class FrankaCubeMediumRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
-    xy_random_size = "medium"
+    xy_random_size: str = "medium"
 
 
 @configclass
 class FrankaCubeLargeRandomLiftEnvCfg(FrankaCubeLiftEnvCfg):
-    xy_random_size = "large"
+    xy_random_size: str = "large"
 
 
 @configclass

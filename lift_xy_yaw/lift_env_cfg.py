@@ -29,6 +29,7 @@ from . import mdp
 
 # These are offsets added to each object's InitialStateCfg position by reset_root_state_uniform.
 XY_RANDOM_OFFSET_RANGES = {
+    "fixed": {"x": (0.0, 0.0), "y": (0.0, 0.0), "yaw": (-math.pi, math.pi)},
     "small": {"x": (-0.03, 0.03), "y": (-0.03, 0.03)},
     "medium": {"x": (-0.10, 0.10), "y": (-0.10, 0.10)},
     "large": {"x": (-0.30, 0.30), "y": (-0.25, 0.25)},
@@ -151,7 +152,7 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.12}, weight=2.0)
+    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.0)
 
     close_gripper_near_object = RewTerm(
         func=mdp.gripper_closed_when_near_object,
@@ -177,18 +178,18 @@ class RewardsCfg:
         weight=8.0,
     )
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"height_offset": 0.05}, weight=8.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.3, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=4.0,
+        params={"std": 0.3, "minimal_height": 0.04, "goal_height_offset": 0.20},
+        weight=16.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.05, "height_offset": 0.05, "goal_height_offset": 0.20},
-        weight=2.0,
+        params={"std": 0.05, "minimal_height": 0.04, "goal_height_offset": 0.20},
+        weight=5.0,
     )
 
     # action penalty
@@ -226,7 +227,7 @@ class CurriculumCfg:
 class LiftEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the lifting environment."""
 
-    xy_random_size = "large"
+    xy_random_size: str = "large"
 
     # Scene settings
     scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=2.5)
