@@ -22,6 +22,7 @@ from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 
+UPRIGHT_ROT = (1.0, 0.0, 0.0, 0.0)
 YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
 
 GROCERY_OBJECTS = {
@@ -37,7 +38,7 @@ GROCERY_OBJECTS = {
     },
     "tomato_soup_can": {
         "initial_pos": (0.45, 0.0, 0.10),
-        "initial_rot": YAW_90_ROT,
+        "initial_rot": UPRIGHT_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
             scale=(1.109, 1.080, 1.108),
@@ -91,7 +92,7 @@ GROCERY_OBJECTS = {
     },
     "small_tomato_soup_can": {
         "initial_pos": (0.45, 0.0, 0.10),
-        "initial_rot": YAW_90_ROT,
+        "initial_rot": UPRIGHT_ROT,
         "spawn": sim_utils.UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
             scale=(0.739, 0.687, 0.738),
@@ -212,6 +213,10 @@ class FrankaSugarBoxLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
 class FrankaTomatoSoupCanLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
     object_name = "tomato_soup_can"
 
+    def __post_init__(self):
+        super().__post_init__()
+        self.events.reset_object_position.params["pose_range"]["yaw"] = (0.0, 0.0)
+
 
 @configclass
 class FrankaMustardBottleLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
@@ -231,6 +236,10 @@ class FrankaBlackCubeLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
 @configclass
 class FrankaSmallTomatoSoupCanLargeRandomLiftEnvCfg(FrankaGroceryLargeRandomLiftEnvCfg):
     object_name = "small_tomato_soup_can"
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.events.reset_object_position.params["pose_range"]["yaw"] = (0.0, 0.0)
 
 
 @configclass
