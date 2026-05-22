@@ -23,7 +23,7 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 
 
 UPRIGHT_ROT = (1.0, 0.0, 0.0, 0.0)
-TOMATO_CAN_UPRIGHT_ROT = (0.7071068, 0.0, -0.7071068, 0.0)
+TOMATO_CAN_UPRIGHT_ROT = (0.7071068, 0.7071068, 0.0, 0.0)
 YAW_90_ROT = (0.7071068, 0.0, 0.0, 0.7071068)
 
 GROCERY_OBJECTS = {
