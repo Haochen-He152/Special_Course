@@ -56,6 +56,18 @@ parser.add_argument("--goal-x", type=float, nargs=2, default=(0.38, 0.58), metav
 parser.add_argument("--goal-y", type=float, nargs=2, default=(-0.22, 0.22), metavar=("MIN", "MAX"))
 parser.add_argument("--min-start-goal-dist", type=float, default=0.18, help="Minimum XY distance between samples.")
 parser.add_argument("--lift-height", type=float, default=0.34, help="World z used while carrying the object.")
+parser.add_argument(
+    "--grasp-z-offset",
+    type=float,
+    default=0.0,
+    help="Extra offset added to the per-object grasp z. Use a negative value to close lower.",
+)
+parser.add_argument(
+    "--release-z-offset",
+    type=float,
+    default=0.0,
+    help="Extra offset added to the per-object release z.",
+)
 parser.add_argument("--camera-eye", type=float, nargs=3, default=(1.35, -1.05, 0.95), metavar=("X", "Y", "Z"))
 parser.add_argument("--camera-target", type=float, nargs=3, default=(0.48, 0.0, 0.05), metavar=("X", "Y", "Z"))
 parser.add_argument("--no-record-video", action="store_true", help="Disable video recording for quick debugging.")
@@ -119,12 +131,12 @@ class GraspTuning:
 
 
 GRASP_TUNING = {
-    "sugar_box": GraspTuning(grasp_z=0.135, approach_z=0.28, release_z=0.14),
-    "tomato_soup_can": GraspTuning(grasp_z=0.125, approach_z=0.27, release_z=0.13),
-    "mustard_bottle": GraspTuning(grasp_z=0.145, approach_z=0.30, release_z=0.15),
-    "white_cube": GraspTuning(grasp_z=0.075, approach_z=0.23, release_z=0.08),
-    "black_cube": GraspTuning(grasp_z=0.065, approach_z=0.22, release_z=0.07),
-    "small_tomato_soup_can": GraspTuning(grasp_z=0.095, approach_z=0.24, release_z=0.10),
+    "sugar_box": GraspTuning(grasp_z=0.100, approach_z=0.28, release_z=0.105),
+    "tomato_soup_can": GraspTuning(grasp_z=0.100, approach_z=0.27, release_z=0.105),
+    "mustard_bottle": GraspTuning(grasp_z=0.105, approach_z=0.30, release_z=0.110),
+    "white_cube": GraspTuning(grasp_z=0.050, approach_z=0.23, release_z=0.060),
+    "black_cube": GraspTuning(grasp_z=0.040, approach_z=0.22, release_z=0.050),
+    "small_tomato_soup_can": GraspTuning(grasp_z=0.075, approach_z=0.24, release_z=0.080),
 }
 
 
@@ -252,16 +264,18 @@ def run_object(object_name: str, rng: random.Random) -> None:
     env.reset(seed=args_cli.seed)
     _set_object_pose(env, object_name, start_xy)
 
+    grasp_z = tuning.grasp_z + args_cli.grasp_z_offset
+    release_z = tuning.release_z + args_cli.release_z_offset
     pre_grasp = _pose(start_xy[0], start_xy[1], tuning.approach_z)
-    grasp = _pose(start_xy[0], start_xy[1], tuning.grasp_z)
+    grasp = _pose(start_xy[0], start_xy[1], grasp_z)
     lift = _pose(start_xy[0], start_xy[1], args_cli.lift_height)
     transfer = _pose(goal_xy[0], goal_xy[1], args_cli.lift_height)
     pre_place = _pose(goal_xy[0], goal_xy[1], tuning.approach_z)
-    place = _pose(goal_xy[0], goal_xy[1], tuning.release_z)
+    place = _pose(goal_xy[0], goal_xy[1], release_z)
 
     print(
         f"[INFO] {object_name}: start=({start_xy[0]:.3f}, {start_xy[1]:.3f}), "
-        f"goal=({goal_xy[0]:.3f}, {goal_xy[1]:.3f})",
+        f"goal=({goal_xy[0]:.3f}, {goal_xy[1]:.3f}), grasp_z={grasp_z:.3f}, release_z={release_z:.3f}",
         flush=True,
     )
 
