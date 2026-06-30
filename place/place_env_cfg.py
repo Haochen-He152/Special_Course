@@ -79,14 +79,14 @@ class ActionsCfg:
 
 @configclass
 class ObservationsCfg:
-    """32D policy observation: 9 + 9 + 3 + 3 + 8."""
+    """40D policy observation: 9 + 9 + 7 + 7 + 8."""
 
     @configclass
     class PolicyCfg(ObsGroup):
         joint_pos = ObsTerm(func=mdp.joint_pos_rel)
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
-        target_object_position = ObsTerm(func=mdp.target_position_command, params={"command_name": "object_pose"})
+        object_pose = ObsTerm(func=mdp.object_pose_in_robot_root_frame)
+        target_object_pose = ObsTerm(func=mdp.target_pose_command, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
@@ -102,20 +102,15 @@ class EventCfg:
 
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
-    reset_object_position = EventTerm(
-        func=mdp.reset_object_root_state_uniform_absolute,
+    reset_object_to_gripper = EventTerm(
+        func=mdp.reset_object_root_state_to_ee,
         mode="reset",
         params={
-            "pose_range": {
-                "x": (0.4, 0.6),
-                "y": (-0.25, 0.25),
-                "z": (0.25, 0.5),
-                "roll": (0.0, 0.0),
-                "pitch": (0.0, 0.0),
-                "yaw": (0.0, 0.0),
-            },
+            "position_offset": (0.0, 0.0, 0.0),
+            "orientation_offset": (0.0, 0.0, 0.0),
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object", body_names="Object"),
+            "ee_frame_cfg": SceneEntityCfg("ee_frame"),
         },
     )
 
